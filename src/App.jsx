@@ -26,19 +26,17 @@ export default function App() {
       <h1>AI Fitness Coach - Camera Test</h1>
 
       <video
-      
-  ref={videoRef}
-  autoPlay
-  playsInline
-  muted
-  style={{
-    width: "400px",
-    height: "300px",
-    border: "2px solid black",
-    background: "black"
-  }}
-/>
-      
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        style={{
+          width: "400px",
+          height: "300px",
+          border: "2px solid black",
+          background: "black",
+        }}
+      />
     </div>
   );
 }
