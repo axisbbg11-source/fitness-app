@@ -1,4 +1,7 @@
 {
+  "engines": {
+  "node": "20.x"
+},
   "name": "reelbosster",
   "private": true,
   "version": "0.0.0",
