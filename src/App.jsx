@@ -1,27 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./Login";
+import Dashboard from "./Dashboard";
 
 export default function App() {
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-        });
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        console.error("Camera error:", err);
-      }
-    }
-
-    startCamera();
-  }, []);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("fitcoach_logged_in") === "true"
+  );
 
   return (
+<<<<<<< HEAD
     <div style={{ textAlign: "center" }}>
       <h1>AI Fitness Coach - Camera Test</h1>
 
@@ -38,5 +26,23 @@ export default function App() {
         }}
       />
     </div>
+=======
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={<Login onLogin={() => setIsLoggedIn(true)} />}
+        />
+        <Route
+          path="/dashboard"
+          element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="*"
+          element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} />}
+        />
+      </Routes>
+    </BrowserRouter>
+>>>>>>> 9e0807c (clean upload)
   );
 }
