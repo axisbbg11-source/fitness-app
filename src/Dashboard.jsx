@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import ParticleBackground from "./components";
 
 /* ─────────────────────────────────────────
    ALL DASHBOARD CSS (scoped inside component)
@@ -29,7 +30,7 @@ const DASHBOARD_CSS = `
 }
 
 .dashboard-root * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-.dashboard-root { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+.dashboard-root { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; position: relative; }
 
 /* LOADING */
 #loadScreen { position: fixed; inset: 0; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; z-index: 9999; transition: opacity .5s; }
@@ -55,11 +56,11 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 /* ── PREMIUM NAV BUTTON ── */
 .premium-nav-btn {
   display: flex; align-items: center; gap: 5px;
-  background: linear-gradient(135deg, #ff4d00, #ff8c42);
+  background: linear-gradient(135deg, #54535b, #879ca4);
   color: #fff; border: none; padding: 6px 13px;
   border-radius: 20px; font-size: .75rem; font-weight: 700;
   cursor: pointer; font-family: var(--font);
-  box-shadow: 0 4px 14px rgba(255,77,0,.35);
+  box-shadow: 0 4px 14px rgba(117, 108, 105, 0.35);
   transition: all .2s; white-space: nowrap;
 }
 .premium-nav-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,77,0,.45); }
@@ -73,7 +74,7 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 .exercise-selector { display: flex; gap: 7px; flex-wrap: wrap; }
 .ex-btn { padding: 7px 13px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--white); font-family: var(--font); font-size: .78rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: 5px; }
 .ex-btn:hover { border-color: var(--accent); color: var(--accent); }
-.ex-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(255,77,0,.3); }
+.ex-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(131, 111, 95, 0.3); }
 .difficulty-selector { display: flex; gap: 7px; flex-wrap: wrap; }
 .diff-btn { padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--white); font-family: var(--font); font-size: .76rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .25s; display: flex; align-items: center; gap: 5px; }
 .diff-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,.08); }
@@ -83,7 +84,7 @@ nav { background: var(--white); border-bottom: 1px solid var(--border); padding:
 #diff-hard.active { background: linear-gradient(135deg,#ff4d4d,#d63031); box-shadow: 0 5px 18px rgba(214,48,49,.35); }
 
 /* VIDEO CARD */
-.video-card { background: #1a1a1a; border-radius: var(--radius); overflow: hidden; position: relative; aspect-ratio: 4/3; box-shadow: var(--shadow-lg); min-height: 220px; }
+.video-card { background: #574d4d; border-radius: var(--radius); overflow: hidden; position: relative; aspect-ratio: 4/3; box-shadow: var(--shadow-lg); min-height: 220px; }
 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); }
 
@@ -96,7 +97,7 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: sca
 .form-score-wrap { background: rgba(0,0,0,.65); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12); border-radius: 9px; padding: 7px 11px; display: flex; align-items: center; gap: 7px; color: #fff; }
 .form-score-label { font-size: .58rem; color: rgba(255,255,255,.6); text-transform: uppercase; letter-spacing: .08em; }
 .form-score-val { font-size: 1.05rem; font-weight: 700; color: var(--accent2); transition: color .3s; }
-.form-score-val.perfect { color: #39ff14; }
+.form-score-val.perfect { color: #14ffff; }
 .form-score-val.low { color: var(--warn); }
 
 /* COACH OVERLAY */
@@ -462,10 +463,10 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: sca
 .pay-success-sub { font-size: 13px; color: #5c6480; text-align: center; line-height: 1.6; max-width: 280px; }
 .pay-success-cta {
   margin-top: 8px; padding: 12px 28px;
-  background: #ff4d00; color: #fff; border: none;
+  background: linear-gradient(180deg, #111 0%, #1a1a1a 100%);
   border-radius: 30px; font-family: var(--font);
   font-size: 14px; font-weight: 700; cursor: pointer;
-  box-shadow: 0 4px 18px rgba(255,77,0,.45); transition: all .2s;
+  box-shadow: 0 4px 18px rgba(103, 92, 92, 0.45); transition: all .2s;
 }
 .pay-success-cta:hover { background: #e03d00; transform: translateY(-1px); }
 
@@ -1398,8 +1399,14 @@ Return ONLY valid JSON, no markdown:
   ───────────────────────────────────────── */
   return (
     <div className="dashboard-root">
-      {/* LOAD SCREEN */}
-      {loadVisible && (
+  {/* ── 3D AI PARTICLE BACKGROUND ── */}
+  <ParticleBackground />
+
+  {/* ── CONTENT WRAPPER (sits above particles) ── */}
+  <div style={{ position: "relative", zIndex: 1 }}>
+
+  {/* LOAD SCREEN */}
+  {loadVisible && (
         <div id="loadScreen" className={loadOut ? "out" : ""}>
           <div className="load-logo">Fit<span>Coach</span> AI</div>
           <div className="load-bar-wrap">
@@ -1433,7 +1440,7 @@ Return ONLY valid JSON, no markdown:
         <div className="nav-right">
           {/* 🌟 PREMIUM BUTTON — opens payment modal */}
           <button className="premium-nav-btn" onClick={() => setPaymentOpen(true)}>
-            ⚡ Go Premium
+            ⚡Premium
           </button>
           <button className="diet-nav-btn" onClick={() => setDietModalOpen(true)}>🥗 Diet</button>
           <div className="lang-toggle">
@@ -1668,7 +1675,7 @@ Return ONLY valid JSON, no markdown:
         isOpen={paymentOpen}
         onClose={() => setPaymentOpen(false)}
       />
-
+</div>
     </div>
   );
 }
