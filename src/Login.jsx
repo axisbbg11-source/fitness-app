@@ -1,281 +1,94 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ParticleBackground from './components';
 
-const styles = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
-
-.fc-login-root {
-  min-height: 100vh;
-  background: #fafaf5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.fc-login-card {
-  width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  padding: 44px 40px;
-  border-radius: 32px;
-  border: 1px solid #dadad5;
-  box-shadow: 0 12px 48px rgba(0,0,0,0.06);
-}
-
-.fc-brand {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: #ff4d00;
-  margin-bottom: 8px;
-}
-
-.fc-welcome {
-  font-family: 'Syne', sans-serif;
-  font-size: 2.1rem;
-  font-weight: 800;
-  color: #1c1c1a;
-  margin-bottom: 10px;
-}
-
-.fc-subtitle {
-  color: #474742;
-  font-size: 0.9rem;
-  margin-bottom: 30px;
-}
-
-.fc-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.fc-label {
-  color: #474742;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.fc-input {
-  padding: 16px 18px;
-  border: 2px solid transparent;
-  outline: none;
-  border-radius: 16px;
-  background: #f4f4ef;
-  font-size: 0.95rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.fc-input:focus {
-  border-color: #ff4d00;
-  background: #fff;
-}
-
-.fc-input.error {
-  border-color: #e74c3c;
-  background: #fff0f0;
-}
-
-.fc-error-msg {
-  color: #e74c3c;
-  font-size: 0.78rem;
-}
-
-.fc-login-btn {
-  width: 100%;
-  padding: 17px;
-  border: none;
-  border-radius: 18px;
-  background: #ff4d00;
-  color: white;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.fc-login-btn:hover {
-  background: #e04400;
-}
-
-.fc-divider {
-  margin: 28px 0;
-  text-align: center;
-  color: #888880;
-  font-size: 0.82rem;
-}
-
-.fc-google-btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: 16px;
-  border: 1.5px solid #dadad5;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-.fc-google-btn:hover {
-  border-color: #ff4d00;
-}
-
-.fc-footer {
-  margin-top: 28px;
-  text-align: center;
-  color: #474742;
-  font-size: 0.85rem;
-}
-
-.fc-footer a {
-  color: #ff4d00;
-  text-decoration: none;
-  font-weight: 700;
-}
-
-.fc-spinner {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin-right: 6px;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-`;
-
-export default function Login({ onLogin }) {
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({});
+export default function Login() {
+  const nav = useNavigate();
+  const [email, setEmail] = useState('');
+  const [pass, setPass] = useState('');
+  const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const validate = () => {
-    const e = {};
-    if (!email.trim()) {
-      e.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      e.email = "Enter valid email";
-    }
-    if (!password.trim()) {
-      e.password = "Password is required";
-    } else if (password.length < 6) {
-      e.password = "Minimum 6 characters";
-    }
-    return e;
+  const handleLogin = (e) => {
+    localStorage.setItem("fitcoach_logged_in", "true");
+    e.preventDefault();
+    setErr('');
+    if (!email || !pass) { setErr('Please fill in all fields'); return; }
+    setLoading(true);
+    // Simulated login — replace with your actual auth
+    setTimeout(() => {
+      localStorage.setItem('user', JSON.stringify({ name: email.split('@')[0], email }));
+      localStorage.setItem('token', 'demo-token');
+      setLoading(false);
+      onLogin();
+      nav('/dashboard');
+    }, 1000);
   };
 
-  const handleSubmit = async () => {
-    const e = validate();
-    setErrors(e);
-    if (Object.keys(e).length) return;
-
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-
+  const handleGoogle = () => {
     localStorage.setItem("fitcoach_logged_in", "true");
-    onLogin();
-    navigate("/dashboard");
+    // Replace with your Google auth logic
+    localStorage.setItem('user', JSON.stringify({ name: 'User', email: 'user@gmail.com' }));
+    localStorage.setItem('token', 'google-token');
+    nav('/dashboard');
   };
 
   return (
-    <>
-      <style>{styles}</style>
+    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center relative">
+      <ParticleBackground />
 
-      <div className="fc-login-root">
-        <div className="fc-login-card">
-
-          <div className="fc-brand">FitCoach AI</div>
-
-          <h1 className="fc-welcome">Welcome back 👋</h1>
-
-          <p className="fc-subtitle">Log in to continue your wellness journey.</p>
-
-          <div className="fc-input-group">
-            <label className="fc-label">Email</label>
-            <input
-              type="email"
-              placeholder="hello@fitcoach.ai"
-              className={`fc-input ${errors.email ? "error" : ""}`}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            {errors.email && (
-              <div className="fc-error-msg">{errors.email}</div>
-            )}
-          </div>
-
-          <div className="fc-input-group">
-            <label className="fc-label">Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className={`fc-input ${errors.password ? "error" : ""}`}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {errors.password && (
-              <div className="fc-error-msg">{errors.password}</div>
-            )}
-          </div>
-
-          <button
-            className="fc-login-btn"
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="fc-spinner"></span>
-                Logging in...
-              </>
-            ) : (
-              "Login →"
-            )}
-          </button>
-
-          <div className="fc-divider">Or continue with</div>
-
-          <button
-            className="fc-google-btn"
-            onClick={() => {
-              localStorage.setItem("fitcoach_logged_in", "true");
-              onLogin();
-              navigate("/dashboard");
-            }}
-          >
-            <img
-              src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
-              alt="Google"
-              width={20}
-            />
-            Sign in with Google
-          </button>
-
-          <p className="fc-footer">
-            New to FitCoach? <a href="#">Create Account</a>
-          </p>
-
+      <div className="relative z-10 w-full max-w-md mx-4 bg-gray-900/80 backdrop-blur-lg border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+            FitCoach
+          </h1>
+          <p className="text-gray-400 mt-2">AI-Powered Fitness Coach</p>
         </div>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="text-sm text-gray-300 mb-1 block">Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+              placeholder="you@example.com" />
+          </div>
+
+          <div>
+            <label className="text-sm text-gray-300 mb-1 block">Password</label>
+            <input type="password" value={pass} onChange={e => setPass(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+              placeholder="Enter password" />
+          </div>
+
+          {err && <p className="text-red-400 text-sm">{err}</p>}
+
+          <button type="submit" disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold rounded-xl hover:from-yellow-300 hover:to-orange-400 disabled:opacity-50">
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+
+        <div className="flex items-center my-6">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="px-3 text-sm text-gray-500">or</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+
+        <button onClick={handleGoogle}
+          className="w-full py-3 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 flex items-center justify-center gap-2">
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Don't have an account? <span className="text-yellow-400 cursor-pointer hover:underline">Sign up</span>
+        </p>
       </div>
-    </>
+    </div>
   );
 }

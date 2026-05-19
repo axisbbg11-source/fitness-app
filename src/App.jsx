@@ -1,38 +1,33 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
+
+function LoginWrapper() {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    localStorage.setItem("fitcoach_logged_in", "true");
+    navigate("/dashboard");
+  };
+
+  return <Login onLogin={handleLogin} />;
+}
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("fitcoach_logged_in") === "true"
   );
 
-  return (
-<<<<<<< HEAD
-    <div style={{ textAlign: "center" }}>
-      <h1>AI Fitness Coach - Camera Test</h1>
+  const handleLogin = () => {
+    localStorage.setItem("fitcoach_logged_in", "true");
+    setIsLoggedIn(true);
+  };
 
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        style={{
-          width: "400px",
-          height: "300px",
-          border: "2px solid black",
-          background: "black",
-        }}
-      />
-    </div>
-=======
+  return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/login"
-          element={<Login onLogin={() => setIsLoggedIn(true)} />}
-        />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route
           path="/dashboard"
           element={isLoggedIn ? <Dashboard /> : <Navigate to="/login" />}
@@ -43,6 +38,5 @@ export default function App() {
         />
       </Routes>
     </BrowserRouter>
->>>>>>> 9e0807c (clean upload)
   );
 }
