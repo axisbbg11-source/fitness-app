@@ -587,6 +587,7 @@ const lastUIUpdateRef      = useRef(0);
             body: JSON.stringify({ uid: firebaseUser.uid }),
           });
           const data = await res.json();
+          console.log("Meal API response:", data);
           if (data.isPremium) setIsPremium(true);
         } catch {
           // Fallback to localStorage if backend unreachable
