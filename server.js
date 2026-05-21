@@ -33,30 +33,46 @@ async function callGemini(prompt) {
 }
 
 // ── Helper: call Gemini JSON ─────────────────────────────────
-async function callGeminiJSON(prompt) {
+
+ async function callGeminiJSON(prompt) {
   const res = await fetch(GEMINI_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [
+        {
+          parts: [{ text: prompt }],
+        },
+      ],
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 512,
-        responseMimeType: 'application/json',
       },
     }),
   });
 
   const data = await res.json();
 
-  if (data.error) throw new Error(data.error.message);
+  console.log('GEMINI RAW:', JSON.stringify(data));
+
+  if (data.error) {
+    throw new Error(data.error.message);
+  }
 
   const raw =
     data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
 
-  return JSON.parse(
-    raw.replace(/```json|```/g, '').trim()
-  );
+  try {
+    return JSON.parse(
+      raw.replace(/```json|```/g, '').trim()
+    );
+  } catch (err) {
+    console.error('JSON PARSE ERROR:', raw);
+
+    throw new Error('Invalid JSON returned by Gemini');
+  }
 }
 
 // ── Routes ───────────────────────────────────────────────────
