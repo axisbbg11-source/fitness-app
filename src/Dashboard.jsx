@@ -581,11 +581,22 @@ const lastUIUpdateRef      = useRef(0);
       // Premium: verify via backend using Firebase UID
       if (firebaseUser?.uid) {
         try {
-          const res = await fetch(`${BACKEND_URL}/api/verify-premium`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: firebaseUser.uid }),
-          });
+          const response = await fetch(
+  'https://your-backend-name.onrender.com/api/analyze-meals',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      meals: mealText,
+    }),
+  }
+);
+
+const data = await response.json();
+
+console.log(data);
           const data = await res.json();
           console.log("Meal API response:", data);
           if (data.isPremium) setIsPremium(true);
