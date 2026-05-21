@@ -1,155 +1,144 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
-
+const express = require('express');
+const cors = require('cors');
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
-const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
 
-// ── In-memory premium store (replace with DB later) ──────────
-const premiumUsers = new Set();
-
-// ==================== VERIFY PREMIUM ====================
-app.post("/api/verify-premium", (req, res) => {
-  const { uid } = req.body;
-  if (!uid) return res.json({ isPremium: false });
-  res.json({ isPremium: premiumUsers.has(uid) });
-});
-
-// ==================== SET PREMIUM ====================
-app.post("/api/set-premium", (req, res) => {
-  const { uid } = req.body;
-  if (!uid) return res.status(400).json({ error: "UID required" });
-  premiumUsers.add(uid);
-  res.json({ success: true });
-});
-
-// ==================== DIET PLAN ====================
-app.post("/api/diet-plan", async (req, res) => {
-  const { exerciseName, difficulty, repCount, caloriesBurned } = req.body;
-
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENROUTER_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemma-3-27b-it:free",
-        messages: [
-          {
-            role: "system",
-            content: "You are a sports nutritionist. Give practical, specific diet advice with real Indian food names."
-          },
-          {
-            role: "user",
-            content: `Create a practical 1-day diet plan for someone who did ${Math.max(1, Math.floor(repCount / 10))} sets of ${exerciseName} (${difficulty}). Total reps: ${repCount}. Burned: ~${caloriesBurned} kcal.\nFormat:\nBreakfast: ...\nPre-workout: ...\nLunch: ...\nPost-workout: ...\nDinner: ...\nUnder 100 words. Specific Indian foods. End with one Hindi tip sentence.`
-          }
-        ],
-        max_tokens: 400
-      })
-    });
-
-    const data = await response.json();
-    if (data.error) return res.status(500).json({ error: data.error.message });
-    const result = data?.choices?.[0]?.message?.content || "Could not generate diet plan.";
-    res.json({ result });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to generate diet plan" });
-  }
-});
-
-// ==================== ANALYZE MEALS ====================
-app.post("/api/analyze-meals", async (req, res) => {
-  const { meals } = req.body;
-
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENROUTER_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemma-3-27b-it:free",
-        messages: [
-          {
-            role: "system",
-            content: "You are a sports nutritionist. Analyze meals and provide nutrition info."
-          },
-          {
-            role: "user",
-            content: `Analyze this day's meals: ${meals}
-
-Respond ONLY with valid JSON in this exact format (no other text):
-{
-  "calories": <number>,
-  "protein": <number>,
-  "carbs": <number>,
-  "fat": <number>,
-  "suggestionEn": "<short English tip>",
-  "suggestionHi": "<same tip in Hindi>"
+// ── Helper: call Gemini ──────────────────────────────────────
+async function callGemini(prompt) {
+  const res = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+    }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
-Estimate calories based on typical Indian food.`
-          }
-        ],
-        max_tokens: 300
-      })
-    });
+// ── Helper: call Gemini for JSON only ───────────────────────
+async function callGeminiJSON(prompt) {
+  const res = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 512,
+        responseMimeType: 'application/json',
+      },
+    }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+  return JSON.parse(raw.replace(/```json|```/g, '').trim());
+}
 
-    const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content || "{}";
+// ── POST /api/diet-plan ──────────────────────────────────────
+app.post('/api/diet-plan', async (req, res) => {
+  try {
+    const { exerciseName, difficulty, repCount, caloriesBurned } = req.body;
 
-    let parsed = {};
-    try {
-      parsed = JSON.parse(content);
-    } catch {
-      const match = content.match(/\{[\s\S]*\}/);
-      if (match) parsed = JSON.parse(match[0]);
-    }
+    const prompt = `You are a certified sports nutritionist specializing in Indian diet and fitness.
+A user just completed the following workout:
+- Exercise: ${exerciseName}
+- Difficulty: ${difficulty}
+- Reps completed: ${repCount}
+- Calories burned: ${caloriesBurned} kcal
 
-    res.json({
-      calories: parsed.calories || 0,
-      protein: parsed.protein || 0,
-      carbs: parsed.carbs || 0,
-      fat: parsed.fat || 0,
-      goalProtein: 120,
-      goalCalories: 2200,
-      suggestionEn: parsed.suggestionEn || "Eat balanced meals.",
-      suggestionHi: parsed.suggestionHi || "संतुलित भोजन लें।"
-    });
+Generate a short, practical, personalized diet plan for them. Include:
+1. Pre-workout snack (if relevant)
+2. Post-workout meal (most important)
+3. Next main meal suggestion
+4. Hydration tip
+5. One supplement suggestion if needed
 
+Rules:
+- Prefer Indian foods (roti, dal, paneer, rice, curd, fruits, etc.)
+- Also include common foods like eggs, oats, banana where appropriate
+- Keep it concise and actionable
+- Use bullet points
+- No long paragraphs`;
+
+    const result = await callGemini(prompt);
+    res.json({ result });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to analyze meals" });
+    console.error('Diet plan error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ==================== OLD ROUTES (kept for compatibility) ====================
-app.post("/analyze-meals", async (req, res) => {
-  req.url = "/api/analyze-meals";
-  res.redirect(307, "/api/analyze-meals");
+// ── POST /api/analyze-meals ──────────────────────────────────
+app.post('/api/analyze-meals', async (req, res) => {
+  try {
+    const { meals } = req.body;
+
+    const prompt = `You are a nutrition expert. Analyze the following meals and return accurate nutritional data.
+Meals: "${meals}"
+
+You must return ONLY a valid JSON object with these exact fields:
+{
+  "calories": <total kcal as number>,
+  "protein": <grams as number>,
+  "carbs": <grams as number>,
+  "fat": <grams as number>,
+  "suggestionEn": "<one practical improvement tip in English>",
+  "suggestionHi": "<same tip in simple Hindi>",
+  "goalProtein": 120,
+  "goalCalories": 2200
+}
+
+Rules:
+- Accurately estimate values for Indian foods (roti ~80kcal, dal ~150kcal per bowl, etc.)
+- Accurately estimate values for common foods (egg ~70kcal, banana ~90kcal, etc.)
+- All values must be numbers, no strings
+- suggestionEn and suggestionHi must be helpful, specific, and short (1 sentence each)
+- Return only the JSON, no extra text`;
+
+    const result = await callGeminiJSON(prompt);
+    res.json(result);
+  } catch (err) {
+    console.error('Analyze meals error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post("/diet-plan", async (req, res) => {
-  res.redirect(307, "/api/diet-plan");
+// ── POST /api/verify-premium ─────────────────────────────────
+app.post('/api/verify-premium', async (req, res) => {
+  try {
+    const { uid } = req.body;
+    // TODO: connect your real DB here
+    // For now returns false so localStorage fallback works
+    res.json({ isPremium: false });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ==================== HEALTH CHECK ====================
-app.get("/", (req, res) => {
-  res.json({ status: "FitCoach API running" });
+// ── POST /api/set-premium ────────────────────────────────────
+app.post('/api/set-premium', async (req, res) => {
+  try {
+    const { uid } = req.body;
+    // TODO: save to your real DB here
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// ── Health check ─────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({ status: 'FitCoach API running', gemini: !!GEMINI_API_KEY });
 });
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
