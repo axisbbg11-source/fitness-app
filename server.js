@@ -70,6 +70,54 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 
+// ── POST /api/analyze-meals ─────────────────────────────
+app.post('/api/analyze-meals', async (req, res) => {
+  try {
+    const { meals } = req.body;
+
+    const prompt = `
+Analyze these meals and return nutrition data.
+
+Meals: ${meals}
+
+Return ONLY valid JSON:
+{
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fat": number,
+  "suggestionEn": "short suggestion",
+  "suggestionHi": "short hindi suggestion",
+  "goalProtein": 120,
+  "goalCalories": 2200
+}
+`;
+
+    const result = await callGeminiJSON(prompt);
+
+    res.json(result);
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});
+
+// ── POST /api/verify-premium ────────────────────────────
+app.post('/api/verify-premium', async (req, res) => {
+  try {
+    res.json({
+      isPremium: false
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
