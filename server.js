@@ -105,16 +105,47 @@ Return ONLY valid JSON:
     });
   }
 });
-
-// ── POST /api/verify-premium ────────────────────────────
-app.post('/api/verify-premium', async (req, res) => {
+app.post('/api/analyze-meals', async (req, res) => {
   try {
-    res.json({
-      isPremium: false
-    });
+    console.log('BODY:', req.body);
+
+    const { meals } = req.body;
+
+    if (!meals) {
+      return res.status(400).json({
+        error: 'Meals missing',
+      });
+    }
+
+    const prompt = `
+Analyze these meals and return nutrition data.
+
+Meals: ${meals}
+
+Return ONLY valid JSON:
+{
+  "calories": number,
+  "protein": number,
+  "carbs": number,
+  "fat": number,
+  "suggestionEn": "short suggestion",
+  "suggestionHi": "short hindi suggestion",
+  "goalProtein": 120,
+  "goalCalories": 2200
+}
+`;
+
+    const result = await callGeminiJSON(prompt);
+
+    console.log('RESULT:', result);
+
+    res.json(result);
+
   } catch (err) {
+    console.error('ANALYZE ERROR:', err);
+
     res.status(500).json({
-      error: err.message
+      error: err.message,
     });
   }
 });
