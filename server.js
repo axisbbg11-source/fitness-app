@@ -9,33 +9,14 @@ app.use(express.json());
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const GEMINI_URL =
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-// ── Helper: call Gemini ──────────────────────────────────────
-async function callGemini(prompt) {
-  const res = await fetch(GEMINI_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-      },
-    }),
-  });
+// ─────────────────────────────────────────────
+// GEMINI JSON CALL
+// ─────────────────────────────────────────────
+async function callGeminiJSON(prompt) {
 
-  const data = await res.json();
-
-  if (data.error) throw new Error(data.error.message);
-
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-}
-
-// ── Helper: call Gemini JSON ─────────────────────────────────
-
- async function callGeminiJSON(prompt) {
-  const res = await fetch(GEMINI_URL, {
+  const response = await fetch(GEMINI_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -43,87 +24,51 @@ async function callGemini(prompt) {
     body: JSON.stringify({
       contents: [
         {
-          parts: [{ text: prompt }],
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
         },
       ],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 512,
-      },
     }),
   });
 
-  const data = await res.json();
+  const data = await response.json();
 
-  console.log('GEMINI RAW:', JSON.stringify(data));
+  console.log('RAW GEMINI:', JSON.stringify(data));
 
   if (data.error) {
     throw new Error(data.error.message);
   }
 
-  const raw =
+  const text =
     data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
 
-  try {
-    return JSON.parse(
-      raw.replace(/```json|```/g, '').trim()
-    );
-  } catch (err) {
-    console.error('JSON PARSE ERROR:', raw);
+  const cleaned = text
+    .replace(/```json/g, '')
+    .replace(/```/g, '')
+    .trim();
 
-    throw new Error('Invalid JSON returned by Gemini');
-  }
+  return JSON.parse(cleaned);
 }
 
-// ── Routes ───────────────────────────────────────────────────
-
+// ─────────────────────────────────────────────
+// ROOT
+// ─────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({
-    status: 'FitCoach API running',
+    status: 'Backend running',
     gemini: !!GEMINI_API_KEY,
   });
 });
 
-const PORT = process.env.PORT || 3001;
-
-// ── POST /api/analyze-meals ─────────────────────────────
+// ─────────────────────────────────────────────
+// ANALYZE MEALS
+// ─────────────────────────────────────────────
 app.post('/api/analyze-meals', async (req, res) => {
+
   try {
-    const { meals } = req.body;
-
-    const prompt = `
-Analyze these meals and return nutrition data.
-
-Meals: ${meals}
-
-Return ONLY valid JSON:
-{
-  "calories": number,
-  "protein": number,
-  "carbs": number,
-  "fat": number,
-  "suggestionEn": "short suggestion",
-  "suggestionHi": "short hindi suggestion",
-  "goalProtein": 120,
-  "goalCalories": 2200
-}
-`;
-
-    const result = await callGeminiJSON(prompt);
-
-    res.json(result);
-
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      error: err.message
-    });
-  }
-});
-app.post('/api/analyze-meals', async (req, res) => {
-  try {
-    console.log('BODY:', req.body);
 
     const { meals } = req.body;
 
@@ -134,18 +79,19 @@ app.post('/api/analyze-meals', async (req, res) => {
     }
 
     const prompt = `
-Analyze these meals and return nutrition data.
+Analyze these meals:
 
-Meals: ${meals}
+${meals}
 
 Return ONLY valid JSON:
+
 {
-  "calories": number,
-  "protein": number,
-  "carbs": number,
-  "fat": number,
-  "suggestionEn": "short suggestion",
-  "suggestionHi": "short hindi suggestion",
+  "calories": 500,
+  "protein": 20,
+  "carbs": 50,
+  "fat": 10,
+  "suggestionEn": "Eat more protein",
+  "suggestionHi": "अधिक प्रोटीन खाएं",
   "goalProtein": 120,
   "goalCalories": 2200
 }
@@ -153,18 +99,34 @@ Return ONLY valid JSON:
 
     const result = await callGeminiJSON(prompt);
 
-    console.log('RESULT:', result);
-
     res.json(result);
 
   } catch (err) {
-    console.error('ANALYZE ERROR:', err);
+
+    console.error('ERROR:', err);
 
     res.status(500).json({
       error: err.message,
     });
   }
 });
+
+// ─────────────────────────────────────────────
+// VERIFY PREMIUM
+// ─────────────────────────────────────────────
+app.post('/api/verify-premium', (req, res) => {
+
+  res.json({
+    isPremium: false,
+  });
+
+});
+
+// ─────────────────────────────────────────────
+// SERVER
+// ─────────────────────────────────────────────
+const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
