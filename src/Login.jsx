@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import ParticleBackground from './components';
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "./firebase";
+
 
 export default function Login() {
   const nav = useNavigate();
@@ -65,17 +68,29 @@ export default function Login() {
       console.error('Google login error:', error);
     }
   };
+const handleForgotPassword = async (e) => {
+  e.preventDefault();
 
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    setErr('');
-    if (!resetEmail.trim()) { setErr('Please enter your email'); return; }
+  setErr("");
+
+  if (!resetEmail.trim()) {
+    setErr("Please enter your email");
+    return;
+  }
+
+  try {
     setResetLoading(true);
-    setTimeout(() => {
-      setResetLoading(false);
-      setResetSent(true);
-    }, 1500);
-  };
+
+    await sendPasswordResetEmail(auth, resetEmail);
+
+    setResetSent(true);
+  } catch (error) {
+    setErr(error.message);
+  } finally {
+    setResetLoading(false);
+  }
+};
+  
 
   const handleSignUp = (e) => {
     e.preventDefault();
