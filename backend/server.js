@@ -1,13 +1,53 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
 import { parseNutritionLocally } from './parser.js';
 import { callAI } from './openrouter.js';
 
 const app = express();
 
+const premiumUsers = new Set();
+
 app.use(cors());
+
 app.use(express.json());
+
+// ─────────────────────────────────────────────
+// RATE LIMITERS
+// ─────────────────────────────────────────────
+
+const globalLimiter = rateLimit({
+
+  windowMs: 15 * 60 * 1000,
+
+  max: 200,
+
+  message: {
+    error:
+      'Too many requests. Please try again later.',
+  },
+});
+
+app.use(globalLimiter);
+
+const aiLimiter = rateLimit({
+
+  windowMs: 60 * 1000,
+
+  max: 10,
+
+  message: {
+    error:
+      'Too many AI requests. Please wait 1 minute.',
+  },
+});
+
+app.use('/api/diet-plan', aiLimiter);
+
+app.use('/api/analyze-meals', aiLimiter);
+
+// ─────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3001;
 
@@ -19,6 +59,17 @@ app.get('/', (req, res) => {
 
   res.json({
     status: 'FitCoach backend running',
+  });
+});
+
+// ─────────────────────────────────────────────
+// HEALTH CHECK
+// ─────────────────────────────────────────────
+
+app.get('/health', (req, res) => {
+
+  res.status(200).json({
+    ok: true,
   });
 });
 
@@ -116,7 +167,25 @@ app.post('/api/diet-plan', async (req, res) => {
       repCount,
       caloriesBurned,
       goal,
+      uid,
     } = req.body;
+
+    const isPremium =
+      premiumUsers.has(uid);
+
+    if (!isPremium) {
+
+      return res.json({
+
+        result: `
+PREMIUM FEATURE 🔒
+
+Upgrade to premium
+to unlock personalized
+AI diet plans.
+`,
+      });
+    }
 
     try {
 
@@ -186,6 +255,8 @@ HYDRATION:
 
   } catch (err) {
 
+    console.error(err);
+
     res.status(500).json({
       error: err.message,
     });
@@ -216,6 +287,42 @@ app.get('/test-ai', async (req, res) => {
       error: err.message,
     });
   }
+});
+
+// ─────────────────────────────────────────────
+// SET PREMIUM
+// ─────────────────────────────────────────────
+
+app.post('/api/set-premium', (req, res) => {
+
+  const { uid } = req.body;
+
+  if (!uid) {
+
+    return res.status(400).json({
+      error: 'uid missing',
+    });
+  }
+
+  premiumUsers.add(uid);
+
+  res.json({
+    success: true,
+  });
+});
+
+// ─────────────────────────────────────────────
+// CHECK PREMIUM
+// ─────────────────────────────────────────────
+
+app.post('/api/check-premium', (req, res) => {
+
+  const { uid } = req.body;
+
+  res.json({
+    isPremium:
+      premiumUsers.has(uid),
+  });
 });
 
 // ─────────────────────────────────────────────

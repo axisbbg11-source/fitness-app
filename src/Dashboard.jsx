@@ -831,13 +831,21 @@ if (Date.now() - lastUIUpdateRef.current > 100) {
         setModelLoading(false); modelLoadingRef.current = false; setLoadingStep(0); clearInterval(tipInterval); return;
       }
 
-      videoEl.onloadedmetadata = () => {
-        if (canvasRef.current) { canvasRef.current.width = videoEl.videoWidth||640; canvasRef.current.height = videoEl.videoHeight||480; }
-      };
-
       // processFrame uses ref — not stale state
-      async function processFrame() {
+     let lastFrameTime = 0;
+      async function processFrame(timestamp) {
         if (!isWorkingOutRef.current) return;
+        // limit AI processing speed
+
+if (timestamp - lastFrameTime < 40) {
+
+  animationFrameRef.current =
+    requestAnimationFrame(processFrame);
+
+  return;
+}
+
+lastFrameTime = timestamp;
        if (
   videoRef.current &&
   poseInstanceRef.current &&
@@ -849,6 +857,8 @@ if (Date.now() - lastUIUpdateRef.current > 100) {
     });
   } catch (e) {
     console.error('Pose send error:', e);
+
+  await new Promise(r => setTimeout(r, 50));
   }
 }
         if (isWorkingOutRef.current) {
@@ -857,8 +867,52 @@ if (Date.now() - lastUIUpdateRef.current > 100) {
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { width:640, height:480, facingMode:'user' } });
-        videoEl.srcObject = stream; await videoEl.play();
+       const stream =
+  await navigator.mediaDevices.getUserMedia({
+    video: {
+      width: 640,
+      height: 480,
+      facingMode: 'user',
+    },
+    audio: false,
+  });
+
+videoEl.srcObject = stream;
+
+await new Promise((resolve, reject) => {
+
+  videoEl.onloadedmetadata =
+    async () => {
+
+      try {
+
+        // set canvas size
+        if (canvasRef.current) {
+
+          canvasRef.current.width =
+            videoEl.videoWidth || 640;
+
+          canvasRef.current.height =
+            videoEl.videoHeight || 480;
+        }
+
+        await videoEl.play();
+
+        resolve();
+
+      } catch (err) {
+
+        reject(err);
+      }
+    };
+});
+
+cameraInstanceRef.current = {
+  stop: () => {
+    stream.getTracks().forEach(t => t.stop());
+    videoEl.srcObject = null;
+  }
+};
         cameraInstanceRef.current = { stop: () => { stream.getTracks().forEach(t => t.stop()); videoEl.srcObject = null; } };
       } catch (camErr) {
         setCameraError('Camera access denied. Please allow camera and try again.');
@@ -866,7 +920,17 @@ if (Date.now() - lastUIUpdateRef.current > 100) {
         setModelLoading(false); modelLoadingRef.current = false; setLoadingStep(0); clearInterval(tipInterval); return;
       }
 
+
       processFrame();
+      setModelLoading(false);
+
+modelLoadingRef.current = false;
+
+setLoadingStep(4);
+
+setTimeout(() => {
+  setLoadingStep(0);
+}, 800);
       clearInterval(tipInterval);
 
     } catch (err) {
