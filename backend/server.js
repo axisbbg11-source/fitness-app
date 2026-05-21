@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 
 import { parseNutritionLocally } from './parser.js';
-import { callGemini } from './gemini.js';
+import { callAI } from './openrouter.js';
 
 const app = express();
 
@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3001;
 // ─────────────────────────────────────────────
 
 app.get('/', (req, res) => {
+
   res.json({
     status: 'FitCoach backend running',
   });
@@ -32,13 +33,14 @@ app.post('/api/analyze-meals', async (req, res) => {
     const { meals } = req.body;
 
     if (!meals) {
+
       return res.status(400).json({
         error: 'Meals missing',
       });
     }
 
     // ─────────────────────────
-    // TRY GEMINI FIRST
+    // TRY AI FIRST
     // ─────────────────────────
 
     try {
@@ -63,7 +65,7 @@ Format:
 }
 `;
 
-      const result = await callGemini(prompt);
+      const result = await callAI(prompt);
 
       const cleaned = result
         .replace(/```json/g, '')
@@ -74,12 +76,14 @@ Format:
 
       return res.json(parsed);
 
-    } catch (geminiError) {
+    } catch (aiError) {
 
-      console.log('Gemini failed. Using local parser.');
+      console.log(
+        'AI failed. Using local parser.'
+      );
 
       // ─────────────────────────
-      // FALLBACK LOCAL PARSER
+      // LOCAL FALLBACK
       // ─────────────────────────
 
       const localResult =
@@ -111,12 +115,16 @@ app.post('/api/diet-plan', async (req, res) => {
       difficulty,
       repCount,
       caloriesBurned,
+      goal,
     } = req.body;
 
     try {
 
       const prompt = `
-Create a practical Indian diet plan.
+Create a practical Indian fitness diet plan.
+
+User Goal:
+${goal || 'general fitness'}
 
 Workout:
 - Exercise: ${exerciseName}
@@ -130,12 +138,13 @@ Include:
 - lunch
 - dinner
 - hydration
+- protein target
 
-Keep it concise.
+Keep it concise and practical.
 `;
 
       const result =
-        await callGemini(prompt);
+        await callAI(prompt);
 
       return res.json({
         result,
@@ -143,7 +152,9 @@ Keep it concise.
 
     } catch {
 
-      // FALLBACK MANUAL DIET PLAN
+      // ─────────────────────────
+      // FALLBACK MANUAL PLAN
+      // ─────────────────────────
 
       return res.json({
 
@@ -182,11 +193,34 @@ HYDRATION:
 });
 
 // ─────────────────────────────────────────────
+// TEST AI
+// ─────────────────────────────────────────────
+
+app.get('/test-ai', async (req, res) => {
+
+  try {
+
+    const result = await callAI(
+      'Give a short fitness tip'
+    );
+
+    res.json({
+      success: true,
+      result,
+    });
+
+  } catch (err) {
+
+    res.json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+// ─────────────────────────────────────────────
 // START SERVER
 // ─────────────────────────────────────────────
-app.get('/test-gemini', async (req, res) => {
-  res.json({ success: true });
-});
 
 app.listen(PORT, () => {
 
