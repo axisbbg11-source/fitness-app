@@ -184,6 +184,9 @@ HYDRATION:
 // ─────────────────────────────────────────────
 // START SERVER
 // ─────────────────────────────────────────────
+app.get('/test-gemini', async (req, res) => {
+  res.json({ success: true });
+});
 
 app.listen(PORT, () => {
 
