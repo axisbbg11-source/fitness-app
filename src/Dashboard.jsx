@@ -579,36 +579,20 @@ const lastUIUpdateRef      = useRef(0);
       setDailyTargets(targets); setDailyProgress(progress); setStreak(streakData); setWeeklyData(weekly);
       setEditCalTarget(String(targets.calories)); setEditMinTarget(String(targets.workoutMin)); setEditRepTarget(String(targets.reps));
       // Premium: verify via backend using Firebase UID
-      if (firebaseUser?.uid) {
-        try {
-          const response = await fetch(
-  'https://your-backend-name.onrender.com/api/analyze-meals',
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      meals: mealText,
-    }),
+if (firebaseUser?.uid) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/check-premium`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid: firebaseUser.uid }),
+    });
+    const data = await res.json();
+    if (data.isPremium) setIsPremium(true);
+  } catch {
+    const localPremium = localStorage.getItem('fitcoach-premium');
+    if (localPremium === 'true') setIsPremium(true);
   }
-);
-
-const data = await response.json();
-
-console.log(data);
-          const data = await res.json();
-          console.log("Meal API response:", data);
-          if (data.isPremium) setIsPremium(true);
-        } catch {
-          // Fallback to localStorage if backend unreachable
-          const localPremium = localStorage.getItem('fitcoach-premium');
-          if (localPremium === 'true') setIsPremium(true);
-        }
-      } else {
-        const localPremium = localStorage.getItem('fitcoach-premium');
-        if (localPremium === 'true') setIsPremium(true);
-      }
+}
     };
 
     init();
