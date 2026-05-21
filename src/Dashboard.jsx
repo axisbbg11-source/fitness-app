@@ -43,7 +43,7 @@ import exercises, { categories } from './data/exercises';
 import ParticleBackground from './components';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
-import useVoiceCoach from './Usevoicecoach';
+import UsevoiceCoach from './Usevoicecoach';
 
 // ==================== LOADING TIPS ====================
 const LOADING_TIPS = [
