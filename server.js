@@ -127,6 +127,46 @@ app.post('/api/verify-premium', (req, res) => {
 // ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 
+app.get('/test-gemini', async (req, res) => {
+
+  try {
+
+    const response = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: 'hello',
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log('TEST GEMINI:', data);
+
+    res.json(data);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: err.message,
+    });
+
+  }
+
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
