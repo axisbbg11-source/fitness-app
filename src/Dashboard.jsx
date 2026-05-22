@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+
 import {
   Home as HomeIcon,
   Dumbbell,
@@ -41,10 +42,11 @@ import {
 } from 'lucide-react';
 import exercises, { categories } from './data/exercises';
 import ParticleBackground from './components';
+import { createRepDetector } from '../repDetection.js';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useVoiceCoach from './useVoiceCoach';
-
+import { getPoseInstance, loadCameraUtils } from './poseLoader';
 // ==================== LOADING TIPS ====================
 const LOADING_TIPS = [
   { icon: Flame, text: 'Tip: Stay hydrated during your workout!' },
@@ -328,7 +330,6 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
       setProcessing(false);
       setStep(4);
       localStorage.setItem('fitcoach-premium','true');
-      // Also save to backend
       try {
         await fetch(`${BACKEND_URL}/api/set-premium`, {
           method: 'POST',
@@ -526,33 +527,29 @@ export default function Dashboard() {
   const [editRepTarget, setEditRepTarget] = useState('50');
 
   // ── Refs ──────────────────────────────────────────────────
-  const videoRef             = useRef(null);
-  const canvasRef            = useRef(null);
-  const poseReadyRef         = useRef(false);
-  const workoutStartRef      = useRef(0);
-  const isDownRef            = useRef(false);
-  const repCountRef          = useRef(0);
-  const timerIntervalRef     = useRef(null);
-  const cameraInstanceRef    = useRef(null);
-  const poseInstanceRef      = useRef(null);
-  const goodFormCountRef     = useRef(0);
-  const lastDiffSuggRef      = useRef(0);
-  const modelLoadingRef      = useRef(false);
-  const loadingStepRef       = useRef(0);
-  const onResultsRef         = useRef(null);
-  const smoothedAngleRef     = useRef(null);
-  const downFrameCountRef    = useRef(0);
-  const upFrameCountRef      = useRef(0);
-  const lastRepTimeRef       = useRef(0);
-  const cycleMinAngleRef     = useRef(180);
-  const cycleMaxAngleRef     = useRef(0);
-  const caloriesBurnedRef    = useRef(0);
-  const isWorkingOutRef      = useRef(false);
-  const currentExerciseRef   = useRef(null);
-  const animationFrameRef    = useRef(null);
-const lastUIUpdateRef      = useRef(0);
+  const videoRef          = useRef(null);
+  const canvasRef         = useRef(null);
+  const poseReadyRef      = useRef(false);
+  const workoutStartRef   = useRef(0);
+  const repCountRef       = useRef(0);
+  const timerIntervalRef  = useRef(null);
+  const cameraInstanceRef = useRef(null);
+  const poseInstanceRef   = useRef(null);
+  const goodFormCountRef  = useRef(0);
+  const lastDiffSuggRef   = useRef(0);
+  const modelLoadingRef   = useRef(false);
+  const loadingStepRef    = useRef(0);
+  const onResultsRef      = useRef(null);
+  const smoothedAngleRef  = useRef(null); // kept for voice coach compatibility
+  const caloriesBurnedRef = useRef(0);
+  const isWorkingOutRef   = useRef(false);
+  const currentExerciseRef= useRef(null);
+  const animationFrameRef = useRef(null);
+  const lastUIUpdateRef   = useRef(0);
+  // ── NEW: forgiving rep detector instance ──────────────────
+  const repDetectorRef    = useRef(null);
 
-  // ── NEW: Voice Coach Hook (premium-locked inside) ─────────
+  // ── Voice Coach Hook ──────────────────────────────────────
   const voiceCoach = useVoiceCoach({ isPremium });
   const voiceCoachOnAngle    = voiceCoach.onAngle;
   const voiceCoachOnStart    = voiceCoach.onStart;
@@ -570,7 +567,6 @@ const lastUIUpdateRef      = useRef(0);
   const showToast = useCallback((msg) => { setToast(msg); setTimeout(() => setToast(''), 4000); }, []);
 
   useEffect(() => {
-    // FIX: Wrapped in async function to allow 'await'
     const init = async () => {
       const targets = loadDailyTargets();
       const progress = loadDailyProgress();
@@ -578,25 +574,22 @@ const lastUIUpdateRef      = useRef(0);
       const weekly = loadWeeklyProgress();
       setDailyTargets(targets); setDailyProgress(progress); setStreak(streakData); setWeeklyData(weekly);
       setEditCalTarget(String(targets.calories)); setEditMinTarget(String(targets.workoutMin)); setEditRepTarget(String(targets.reps));
-      // Premium: verify via backend using Firebase UID
-if (firebaseUser?.uid) {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/check-premium`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid: firebaseUser.uid }),
-    });
-    const data = await res.json();
-    if (data.isPremium) setIsPremium(true);
-  } catch {
-    const localPremium = localStorage.getItem('fitcoach-premium');
-    if (localPremium === 'true') setIsPremium(true);
-  }
-}
+      if (firebaseUser?.uid) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/check-premium`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: firebaseUser.uid }),
+          });
+          const data = await res.json();
+          if (data.isPremium) setIsPremium(true);
+        } catch {
+          const localPremium = localStorage.getItem('fitcoach-premium');
+          if (localPremium === 'true') setIsPremium(true);
+        }
+      }
     };
-
     init();
-    // Added firebaseUser to dependencies so it re-checks premium status when user logs in
   }, [firebaseUser]);
 
   const saveTargetEdits = useCallback(() => {
@@ -653,7 +646,7 @@ if (firebaseUser?.uid) {
       }, 1000);
     }
 
-    // Draw skeleton (mirrored X)
+    // ── Draw skeleton (mirrored X) ────────────────────────
     const canvas = canvasRef.current, video = videoRef.current;
     if (canvas && video) {
       const ctx = canvas.getContext('2d');
@@ -691,81 +684,57 @@ if (firebaseUser?.uid) {
       }
     }
 
-    // Angle detection
+    // ── Angle detection ───────────────────────────────────
     const { angle: rawAngle, confidence } = calculateAngle(landmarks, currentExercise.track);
 
+    // ── Ensure detector exists (safety guard) ────────────
+    if (!repDetectorRef.current) {
+      repDetectorRef.current = createRepDetector(currentExercise, null);
+    }
+    const detector = repDetectorRef.current;
+
+    // ── UI angle display (throttled to 100ms) ─────────────
     if (rawAngle > 0 && rawAngle <= 360) {
-      const alpha = 0.35;
-      if (smoothedAngleRef.current === null) { smoothedAngleRef.current = rawAngle; }
-      else {
-        const jump = Math.abs(rawAngle - smoothedAngleRef.current);
-        if (jump > 60) smoothedAngleRef.current = smoothedAngleRef.current*0.95 + rawAngle*0.05;
-        else if (jump > 30) smoothedAngleRef.current = smoothedAngleRef.current*0.88 + rawAngle*0.12;
-        else if (jump > 15) smoothedAngleRef.current = smoothedAngleRef.current*0.75 + rawAngle*0.25;
-        else smoothedAngleRef.current = smoothedAngleRef.current*(1-alpha) + rawAngle*alpha;
-      }
-const angle = smoothedAngleRef.current;
-
-if (Date.now() - lastUIUpdateRef.current > 100) {
-  lastUIUpdateRef.current = Date.now();
-
-  setCurrentAngles(prev => ({
-    ...prev,
-    [currentExercise.track]: Math.round(angle)
-  }));
-
-  currentExercise.form.forEach((f) => {
-    if (f.joint !== currentExercise.track && f.joint !== 'back') {
-      const fR = calculateAngle(landmarks, f.joint);
-
-      if (fR.angle > 0 && fR.angle <= 360) {
-        setCurrentAngles(prev => ({
-          ...prev,
-          [f.joint]: Math.round(fR.angle)
-        }));
+      const displayAngle = detector.getSmoothed() ?? rawAngle;
+      if (Date.now() - lastUIUpdateRef.current > 100) {
+        lastUIUpdateRef.current = Date.now();
+        setCurrentAngles(prev => ({ ...prev, [currentExercise.track]: Math.round(displayAngle) }));
+        currentExercise.form.forEach((f) => {
+          if (f.joint !== currentExercise.track && f.joint !== 'back') {
+            const fR = calculateAngle(landmarks, f.joint);
+            if (fR.angle > 0 && fR.angle <= 360) {
+              setCurrentAngles(prev => ({ ...prev, [f.joint]: Math.round(fR.angle) }));
+            }
+          }
+        });
       }
     }
-  });
-}    }
 
     if (confidence < 0.3 || rawAngle <= 0 || rawAngle > 360) return;
 
+    // ── Forgiving rep detection ───────────────────────────
+    const counted = detector.processAngle(
+      rawAngle,
+      currentExercise.downThreshold,
+      currentExercise.upThreshold
+    );
+
+    // ── Sync smoothed angle to ref for voice coach ────────
+    smoothedAngleRef.current = detector.getSmoothed();
     const angle = smoothedAngleRef.current || rawAngle;
 
-    // ── NEW: voice coach processes every frame (handles hold + rep cues)
-    // Premium check is inside the hook — safe to call for all users
+    // ── Voice coach (every frame) ─────────────────────────
     voiceCoachOnAngle(angle, currentExercise, repCountRef.current);
 
-    cycleMinAngleRef.current = Math.min(cycleMinAngleRef.current, angle);
-    cycleMaxAngleRef.current = Math.max(cycleMaxAngleRef.current, angle);
-
-    const downThresh = currentExercise.downThreshold;
-    const upThresh   = currentExercise.upThreshold;
-    const REQUIRED_FRAMES = 5;
-    const MIN_REP_INTERVAL = 800;
-    const MIN_ANGLE_RANGE = 20;
-
-    if (angle < downThresh) { downFrameCountRef.current++; upFrameCountRef.current = 0; }
-    else if (angle > upThresh) { upFrameCountRef.current++; downFrameCountRef.current = 0; }
-    else { downFrameCountRef.current = Math.max(0, downFrameCountRef.current-2); upFrameCountRef.current = Math.max(0, upFrameCountRef.current-2); }
-
-    if (downFrameCountRef.current >= REQUIRED_FRAMES && !isDownRef.current) {
-      isDownRef.current = true; downFrameCountRef.current = 0;
-    }
-
-    if (upFrameCountRef.current >= REQUIRED_FRAMES && isDownRef.current) {
-      const now = Date.now();
-      const angleRange = cycleMaxAngleRef.current - cycleMinAngleRef.current;
-      if (now - lastRepTimeRef.current >= MIN_REP_INTERVAL && angleRange >= MIN_ANGLE_RANGE) {
-        isDownRef.current = false; upFrameCountRef.current = 0; lastRepTimeRef.current = now;
-        cycleMinAngleRef.current = 180; cycleMaxAngleRef.current = 0;
-        const newCount = repCountRef.current + 1;
-        repCountRef.current = newCount; setRepCount(newCount);
-        const currentCals = Math.round(newCount * getCalPerRep(currentExercise));
-        caloriesBurnedRef.current = currentCals; setCaloriesBurned(currentCals);
-        checkAutoDifficulty(currentExercise, newCount, angle);
-        // voice coach already handles rep milestones via onAngle above
-      }
+    // ── Count rep if detector says so ────────────────────
+    if (counted) {
+      const newCount = repCountRef.current + 1;
+      repCountRef.current = newCount;
+      setRepCount(newCount);
+      const currentCals = Math.round(newCount * getCalPerRep(currentExercise));
+      caloriesBurnedRef.current = currentCals;
+      setCaloriesBurned(currentCals);
+      checkAutoDifficulty(currentExercise, newCount, angle);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checkAutoDifficulty, updateDailyProgress, voiceCoachOnAngle]);
@@ -774,257 +743,178 @@ if (Date.now() - lastUIUpdateRef.current > 100) {
 
   const startWorkout = useCallback(async (exerciseParam) => {
     const exercise = exerciseParam || currentExerciseRef.current;
-    if (isWorkingOutRef.current) return; // solve workout loop in camera;
+    if (isWorkingOutRef.current) return;
     if (!exercise) return;
 
-    // Reset all counters
-    setRepCount(0); repCountRef.current = 0; isDownRef.current = false; poseReadyRef.current = false;
-    goodFormCountRef.current = 0; smoothedAngleRef.current = null;
-    downFrameCountRef.current = 0; upFrameCountRef.current = 0; lastRepTimeRef.current = 0;
-    cycleMinAngleRef.current = 180; cycleMaxAngleRef.current = 0;
+    // ── Reset all counters ────────────────────────────────
+    setRepCount(0); repCountRef.current = 0; poseReadyRef.current = false;
+    goodFormCountRef.current = 0; lastDiffSuggRef.current = 0;
+    smoothedAngleRef.current = null;
     setTimer('Preparing...'); setCaloriesBurned(0); caloriesBurnedRef.current = 0;
     setCoachFeedback(''); setCurrentAngles({}); setCameraError('');
     setModelLoading(true); modelLoadingRef.current = true; setLoadingStep(1); loadingStepRef.current = 1;
     setLoadingTip(Math.floor(Math.random() * LOADING_TIPS.length));
     setCoachFeedback(exercise.form.map(f => `• ${f.rule}`).join('\n'));
 
+    // ── Init forgiving detector for this exercise ─────────
+    if (repDetectorRef.current) repDetectorRef.current.reset();
+    repDetectorRef.current = createRepDetector(exercise, null);
+
     isWorkingOutRef.current = true;
     setIsWorkingOut(true);
-
-    // ── NEW: fire start cue (premium-locked inside hook)
     voiceCoachOnStart();
 
     const tipInterval = setInterval(() => setLoadingTip(prev => (prev+1) % LOADING_TIPS.length), 3000);
 
     try {
       setLoadingStep(2); loadingStepRef.current = 2;
+// Load Pose Instance
+await loadCameraUtils();
 
-      const loadScript = (src) => new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-        const timeout = setTimeout(() => reject(new Error('Script load timeout')), 15000);
-        const script = document.createElement('script');
-        script.src = src; script.crossOrigin = 'anonymous';
-        script.onload = () => { clearTimeout(timeout); resolve(); };
-        script.onerror = () => { clearTimeout(timeout); reject(new Error(`Failed to load ${src}`)); };
-        document.head.appendChild(script);
-      });
+if (!poseInstanceRef.current) {
+  poseInstanceRef.current = await getPoseInstance();
 
-      if (!window.Camera) await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
+  poseInstanceRef.current.onResults((results) => {
+    if (onResultsRef.current) {
+      onResultsRef.current(results);
+    }
+  });
 
-      if (!poseInstanceRef.current) {
-        if (!window.Pose) await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js');
-        const Pose = window.Pose;
-        if (!Pose) throw new Error('MediaPipe Pose failed to load.');
-        const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
-        pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
-        pose.onResults((results) => { if (onResultsRef.current) onResultsRef.current(results); });
-        poseInstanceRef.current = pose;
+  console.log('Pose instance loaded!');
+}
+setLoadingStep(3);
+loadingStepRef.current = 3;
+
+await new Promise(resolve => setTimeout(resolve, 300));
+
+const videoEl = videoRef.current;
+
+if (!videoEl) {
+  setCameraError('Camera element not available.');
+  isWorkingOutRef.current = false;
+  setIsWorkingOut(false);
+  setModelLoading(false);
+  modelLoadingRef.current = false;
+  setLoadingStep(0);
+  clearInterval(tipInterval);
+  return;
+}
+
+// ── Camera Setup ─────────────────────────────
+try {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: 640, height: 480, facingMode: 'user' },
+    audio: false,
+  });
+
+  videoEl.srcObject = stream;
+
+  await new Promise((resolve, reject) => {
+    videoEl.onloadedmetadata = async () => {
+      try {
+        if (canvasRef.current) {
+          canvasRef.current.width = videoEl.videoWidth || 640;
+          canvasRef.current.height = videoEl.videoHeight || 480;
+        }
+
+        await videoEl.play();
+        resolve();
+      } catch (err) {
+        reject(err);
       }
+    };
+  });
 
-      setLoadingStep(3); loadingStepRef.current = 3;
-      await new Promise(resolve => setTimeout(resolve, 300));
+  cameraInstanceRef.current = {
+    stop: () => {
+      stream.getTracks().forEach(t => t.stop());
+      videoEl.srcObject = null;
+    }
+  };
 
-      const videoEl = videoRef.current;
-      if (!videoEl) {
-        setCameraError('Camera element not available.');
-        isWorkingOutRef.current = false; setIsWorkingOut(false);
-        setModelLoading(false); modelLoadingRef.current = false; setLoadingStep(0); clearInterval(tipInterval); return;
-      }
+} catch (camErr) {
+  setCameraError('Camera access denied. Please allow camera and try again.');
 
-      // processFrame uses ref — not stale state
-     let lastFrameTime = 0;
-      async function processFrame(timestamp) {
-        if (!isWorkingOutRef.current) return;
-        // limit AI processing speed
+  isWorkingOutRef.current = false;
+  setIsWorkingOut(false);
 
-if (timestamp - lastFrameTime < 40) {
+  setModelLoading(false);
+  modelLoadingRef.current = false;
 
-  animationFrameRef.current =
-    requestAnimationFrame(processFrame);
+  setLoadingStep(0);
+
+  clearInterval(tipInterval);
 
   return;
 }
 
-lastFrameTime = timestamp;
-       if (
-  videoRef.current &&
-  poseInstanceRef.current &&
-  videoRef.current.readyState >= 2
-) {
-  try {      // safe make it steady 
-    await poseInstanceRef.current.send({
-      image: videoRef.current
-    });
-  } catch (e) {
-    console.error('Pose send error:', e);
+// ── Frame Processing ─────────────────────────
+let lastFrameTime = 0;
 
-  await new Promise(r => setTimeout(r, 50));
+async function processFrame(timestamp) {
+  if (!isWorkingOutRef.current) return;
+
+  if (timestamp - lastFrameTime < 40) {
+    animationFrameRef.current = requestAnimationFrame(processFrame);
+    return;
+  }
+
+  lastFrameTime = timestamp;
+
+  if (
+    videoRef.current &&
+    poseInstanceRef.current &&
+    videoRef.current.readyState >= 2
+  ) {
+    try {
+      await poseInstanceRef.current.send({
+        image: videoRef.current
+      });
+    } catch (e) {
+      console.error('Pose send error:', e);
+      await new Promise(r => setTimeout(r, 50));
+    }
+  }
+
+  if (isWorkingOutRef.current) {
+    animationFrameRef.current = requestAnimationFrame(processFrame);
   }
 }
-        if (isWorkingOutRef.current) {
-  animationFrameRef.current = requestAnimationFrame(processFrame);
-}
-      }
 
-      try {
-       const stream =
-  await navigator.mediaDevices.getUserMedia({
-    video: {
-      width: 640,
-      height: 480,
-      facingMode: 'user',
-    },
-    audio: false,
-  });
+processFrame();
 
-videoEl.srcObject = stream;
-
-await new Promise((resolve, reject) => {
-
-  videoEl.onloadedmetadata =
-    async () => {
-
-      try {
-
-        // set canvas size
-        if (canvasRef.current) {
-
-          canvasRef.current.width =
-            videoEl.videoWidth || 640;
-
-          canvasRef.current.height =
-            videoEl.videoHeight || 480;
-        }
-
-        await videoEl.play();
-
-        resolve();
-
-      } catch (err) {
-
-        reject(err);
-      }
-    };
-});
-
-cameraInstanceRef.current = {
-  stop: () => {
-    stream.getTracks().forEach(t => t.stop());
-    videoEl.srcObject = null;
-  }
-};
-        cameraInstanceRef.current = { stop: () => { stream.getTracks().forEach(t => t.stop()); videoEl.srcObject = null; } };
-      } catch (camErr) {
-        setCameraError('Camera access denied. Please allow camera and try again.');
-        isWorkingOutRef.current = false; setIsWorkingOut(false);
-        setModelLoading(false); modelLoadingRef.current = false; setLoadingStep(0); clearInterval(tipInterval); return;
-      }
-
-
-      processFrame();
-      setModelLoading(false);
-
+// ── Finish Loading ───────────────────────────
+setModelLoading(false);
 modelLoadingRef.current = false;
 
 setLoadingStep(4);
 
-setTimeout(() => {
+setTimeout(() => setLoadingStep(0), 800);
+
+clearInterval(tipInterval);
+
+} catch (err) {
+  console.error('Workout start failed:', err);
+
+  setCameraError(
+    'Failed to start camera. Please allow camera access and try again.'
+  );
+
+  isWorkingOutRef.current = false;
+
+  setIsWorkingOut(false);
+
+  setModelLoading(false);
+
+  modelLoadingRef.current = false;
+
   setLoadingStep(0);
-}, 800);
-      clearInterval(tipInterval);
 
-    } catch (err) {
-      console.error('MediaPipe error:', err);
-      setCameraError('Failed to start camera. Please allow camera access and try again.');
-      isWorkingOutRef.current = false; setIsWorkingOut(false);
-      setModelLoading(false); modelLoadingRef.current = false; setLoadingStep(0); clearInterval(tipInterval);
-    }
-  }, [voiceCoachOnStart]);
-
-  const stopWorkout = useCallback(() => {
-    isWorkingOutRef.current = false;
-    if (timerIntervalRef.current) { clearInterval(timerIntervalRef.current); timerIntervalRef.current = null; }
-    if (cameraInstanceRef.current) { cameraInstanceRef.current.stop(); cameraInstanceRef.current = null; }
-    if (videoRef.current?.srcObject) {  // sometime some browser donot die the camera after the work is finished this section fixed it
-  videoRef.current.srcObject
-    .getTracks()
-    .forEach(track => track.stop());
+  clearInterval(tipInterval);
 }
-    if (animationFrameRef.current) {
-  cancelAnimationFrame(animationFrameRef.current);
-  animationFrameRef.current = null;
-}
-    poseReadyRef.current = false;
-     isDownRef.current = false;
-      smoothedAngleRef.current = null;
-    downFrameCountRef.current = 0;
-     upFrameCountRef.current = 0; 
-     lastRepTimeRef.current = 0;
-    cycleMinAngleRef.current = 180;
-     cycleMaxAngleRef.current = 0;
-    modelLoadingRef.current = false;
-     loadingStepRef.current = 0;
-    setIsWorkingOut(false); setModelLoading(false); setLoadingStep(0);
-    if (workoutStartRef.current > 0) {
-      const elapsed = Math.floor((Date.now() - workoutStartRef.current) / 1000);
-      updateDailyProgress(caloriesBurnedRef.current, elapsed, repCountRef.current, true);
-    }
-    // ── NEW: fire complete cue (premium-locked inside hook)
-    voiceCoachOnComplete();
-  }, [updateDailyProgress, voiceCoachOnComplete]);
 
-  // Pre-load pose on mount
-  useEffect(() => {
-    const preInitPose = async () => {
-      try {
-        const loadScript = (src) => new Promise((resolve, reject) => {
-          if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-          const timeout = setTimeout(() => reject(new Error('Timeout')), 20000);
-          const script = document.createElement('script'); script.src = src; script.crossOrigin = 'anonymous';
-          script.onload = () => { clearTimeout(timeout); resolve(); };
-          script.onerror = () => { clearTimeout(timeout); reject(new Error(`Failed to load ${src}`)); };
-          document.head.appendChild(script);
-        });
-        if (!window.Pose) await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js');
-        if (!window.Camera) await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
-        const Pose = window.Pose;
-        if (Pose && !poseInstanceRef.current) {
-          const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
-          pose.setOptions({ modelComplexity:0, smoothLandmarks:true, enableSegmentation:false, minDetectionConfidence:0.5, minTrackingConfidence:0.5 });
-          pose.onResults((results) => { if (onResultsRef.current) onResultsRef.current(results); });
-          poseInstanceRef.current = pose;
-          console.log('Pose model pre-loaded!');
-        }
-      } catch (err) { console.warn('Pre-init failed (will retry on workout start):', err.message); }
-    };
-    preInitPose();
-  }, []);
+}, [voiceCoachOnStart]);
 
-useEffect(() => {  // everything gets stop every component 
-  return () => {
-    isWorkingOutRef.current = false;
-
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-
-    if (cameraInstanceRef.current) {
-      cameraInstanceRef.current.stop();
-      cameraInstanceRef.current = null;
-    }
-
-    if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject
-        .getTracks()
-        .forEach(track => track.stop());
-    }
-  };
-}, []);
   // ==================== DIET PLAN ====================
   const getDietPlan = async () => {
     setDietLoading(true);
@@ -1045,8 +935,6 @@ useEffect(() => {  // everything gets stop every component
     } catch { setDietPlan('Failed to generate diet plan. Check your internet connection and try again.'); }
     setDietLoading(false);
   };
-
-  // ==================== FOOD DATABASE ====================
 
   const analyzeDiet = async () => {
     if (!mealInput.trim()) return;
@@ -1201,7 +1089,7 @@ useEffect(() => {  // everything gets stop every component
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => setEditingTargets(false)} className="flex-1 py-2 rounded-lg bg-white/10 text-gray-400 text-xs font-semibold cursor-pointer hover:bg-white/15 transition-colors">Cancel</button>
-                        <button onClick={saveTargetEdits} className="flex-1 py-2 rounded-lg text-white text-xs font-bold cursor-pointer transition-all hover:shadow-[0_4px_12pxrgba(255,112,67,0.3)]" style={{ backgroundColor:'#ff7043' }}>Save Targets</button>
+                        <button onClick={saveTargetEdits} className="flex-1 py-2 rounded-lg text-white text-xs font-bold cursor-pointer transition-all" style={{ backgroundColor:'#ff7043' }}>Save Targets</button>
                       </div>
                     </div>
                   )}
@@ -1231,7 +1119,7 @@ useEffect(() => {  // everything gets stop every component
                   <div className="rounded-xl py-2.5 px-3 flex items-center gap-2" style={{ background:'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
                     <Crown size={18} className="text-yellow-400 shrink-0" />
                     <p className="text-white text-xs font-semibold flex-1 min-w-0">Unlock 150+ Exercises & AI Coaching</p>
-                    <button onClick={() => setShowPaymentModal(true)} className="px-3 py-1.5 rounded-lg text-white font-bold text-[10px] cursor-pointer transition-all hover:shadow-[0_4px_12pxrgba(255,112,67,0.4)] whitespace-nowrap flex items-center gap-1 shrink-0" style={{ backgroundColor:'#ff7043' }}><Sparkles size={10} /> Pro</button>
+                    <button onClick={() => setShowPaymentModal(true)} className="px-3 py-1.5 rounded-lg text-white font-bold text-[10px] cursor-pointer transition-all whitespace-nowrap flex items-center gap-1 shrink-0" style={{ backgroundColor:'#ff7043' }}><Sparkles size={10} /> Pro</button>
                   </div>
                 )}
 
@@ -1258,7 +1146,6 @@ useEffect(() => {  // everything gets stop every component
                 <div className="relative rounded-xl overflow-hidden" style={{ background:'#1a1a2e' }}>
                   <div className="relative w-full" style={{ minHeight:'200px' }}>
                     <video ref={videoRef} className="w-full h-auto rounded-xl" style={{ transform:'scaleX(-1)', maxHeight:'40vh', objectFit:'cover' }} autoPlay playsInline muted />
-                    {/* Canvas: NO scaleX(-1) — mirroring done in draw code */}
                     <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
                     {(modelLoading || loadingStep === 4) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a2e]/90 backdrop-blur-md z-10">
@@ -1343,7 +1230,7 @@ useEffect(() => {  // everything gets stop every component
                   {!isPremium && <button onClick={() => setShowPaymentModal(true)} className="mt-1.5 text-[10px] text-[#ff7043] font-semibold hover:underline cursor-pointer flex items-center gap-0.5">Unlock AI Coaching <ChevronRight size={10} /></button>}
                 </div>
 
-                {/* ── NEW: Voice Coach Toggle (premium-locked) ── */}
+                {/* Voice Coach Toggle */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
@@ -1358,10 +1245,9 @@ useEffect(() => {  // everything gets stop every component
                         <span className="text-[10px] text-gray-500">{voiceCoach.isEnabled ? 'Active - range-based cues' : 'Tap to enable'}</span>
                       </div>
                     </div>
-                    {/* Toggle button — shows paywall for free users */}
                     <button
                       onClick={() => { if (!isPremium) { setShowPaymentModal(true); return; } voiceCoach.toggle(); }}
-                      className={`relative w-11 h-6 rounded-full cursor-pointer transition-all ${voiceCoach.isEnabled ? 'shadow-[0_2px_8pxrgba(255,112,67,0.4)]' : ''}`}
+                      className={`relative w-11 h-6 rounded-full cursor-pointer transition-all`}
                       style={{ backgroundColor: voiceCoach.isEnabled ? '#ff7043' : '#374151' }}>
                       <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
                         style={{ left: voiceCoach.isEnabled ? '1.2rem' : '0.125rem' }} />
@@ -1406,7 +1292,7 @@ useEffect(() => {  // everything gets stop every component
                 </div>
               )}
               <div className="px-5 pb-5">
-                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all hover:shadow-[0_8px_28pxrgba(255,112,67,0.35)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#ff7043' }}>
+                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#ff7043' }}>
                   {dietLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating Plan...</> : <><Utensils size={16} /> Get Diet Plan</>}
                 </button>
               </div>
@@ -1429,7 +1315,7 @@ useEffect(() => {  // everything gets stop every component
                   className="w-full p-3 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-gray-500 outline-none resize-none focus:border-[#ff7043] transition-colors" rows={3} />
               </div>
               <div className="px-5 pb-5">
-                <button onClick={analyzeDiet} disabled={analyzeLoading||!mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all hover:shadow-[0_8px_28pxrgba(255,112,67,0.35)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#ff7043' }}>
+                <button onClick={analyzeDiet} disabled={analyzeLoading||!mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#ff7043' }}>
                   {analyzeLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Microscope size={16} /> Analyze Diet</>}
                 </button>
               </div>
