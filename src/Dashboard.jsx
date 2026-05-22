@@ -854,7 +854,7 @@ let lastFrameTime = 0;
 async function processFrame(timestamp) {
   if (!isWorkingOutRef.current) return;
 
-  if (timestamp - lastFrameTime < 40) {
+if (timestamp - lastFrameTime < 40) {
     animationFrameRef.current = requestAnimationFrame(processFrame);
     return;
   }
@@ -881,7 +881,8 @@ async function processFrame(timestamp) {
   }
 }
 
-processFrame();
+animationFrameRef.current =
+  requestAnimationFrame(processFrame);
 
 // ── Finish Loading ───────────────────────────
 setModelLoading(false);
