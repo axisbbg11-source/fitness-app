@@ -126,7 +126,7 @@ const handleForgotPassword = async (e) => {
     boxShadow: '0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03)',
   };
 
-  const inp = "w-full pl-11 pr-4 py-3.5 rounded-xl text-white text-sm outline-none transition-all duration-300 bg-white/[0.04] border border-white/[0.07] placeholder-gray-600 focus:border-[#ff7043]/40 focus:bg-white/[0.06] focus:shadow-[0_0_16px_rgba(255,112,67,0.06)]";
+  const inp = "w-full pl-11 pr-4 py-3.5 rounded-xl text-white text-sm outline-none transition-all duration-300 bg-white/[0.04] border border-white/[0.07] placeholder-gray-600 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10/40 focus:bg-white/[0.06] focus:shadow-[0_0_16px_rgba(79,209,255,0.06)]";
 
   const Logo = () => (
     <div className="flex justify-center mb-5">
@@ -134,11 +134,11 @@ const handleForgotPassword = async (e) => {
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <rect x="1" y="7" width="5" height="10" rx="1.5" fill="#ff7043" />
-            <rect x="18" y="7" width="5" height="10" rx="1.5" fill="#ff7043" />
+            <rect x="1" y="7" width="5" height="10" rx="1.5" fill="#4FD1FF" />
+            <rect x="18" y="7" width="5" height="10" rx="1.5" fill="#4FD1FF" />
             <rect x="5" y="11" width="14" height="2" rx="1" fill="rgba(255,255,255,0.65)" />
-            <rect x="3" y="9" width="2" height="6" rx="0.5" fill="rgba(255,112,67,0.5)" />
-            <rect x="19" y="9" width="2" height="6" rx="0.5" fill="rgba(255,112,67,0.5)" />
+            <rect x="3" y="9" width="2" height="6" rx="0.5" fill="rgba(79,209,255,0.5)" />
+            <rect x="19" y="9" width="2" height="6" rx="0.5" fill="rgba(79,209,255,0.5)" />
           </svg>
         </div>
       </div>
@@ -206,8 +206,8 @@ const handleForgotPassword = async (e) => {
                 <>
                   <div className="flex justify-center mb-5">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ background: 'rgba(255,112,67,0.07)', border: '1px solid rgba(255,112,67,0.1)' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff7043" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      style={{ background: 'rgba(79,209,255,0.07)', border: '1px solid rgba(79,209,255,0.1)' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4FD1FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
                       </svg>
                     </div>
@@ -219,8 +219,8 @@ const handleForgotPassword = async (e) => {
                       onChange={(e) => { setResetEmail(e.target.value); setErr(''); }} className={inp} /></div>
                     {err && <p className="text-red-400/80 text-xs pl-1">{err}</p>}
                     <button type="submit" disabled={resetLoading}
-                      className="w-full py-3.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-300 hover:shadow-[0_8px_28px_rgba(255,112,67,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
-                      style={{ background: 'linear-gradient(135deg, #ff7043, #e64a19)' }}>
+                      className="w-full py-3.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-300 hover:shadow-[0_8px_28px_rgba(79,209,255,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                      style={{ background: 'linear-gradient(135deg, #4FD1FF, #e64a19)' }}>
                       {resetLoading ? <><Spinner /> Sending...</> : 'Send Reset Link'}
                     </button>
                   </form>
@@ -279,8 +279,8 @@ const handleForgotPassword = async (e) => {
                 </div>
                 {err && <p className="text-red-400/80 text-xs pl-1">{err}</p>}
                 <button type="submit" disabled={signLoading}
-                  className="w-full py-3.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-300 hover:shadow-[0_8px_28px_rgba(255,112,67,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #ff7043, #e64a19)' }}>
+                  className="w-full py-3.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-300 hover:shadow-[0_8px_28px_rgba(79,209,255,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ background: 'linear-gradient(135deg, #4FD1FF, #e64a19)' }}>
                   {signLoading ? <><Spinner /> Creating...</> : 'Create Account'}
                 </button>
               </form>
@@ -326,7 +326,7 @@ const handleForgotPassword = async (e) => {
             <p className="text-gray-600 text-xs text-center mb-7">
               Don't have an account yet?{' '}
               <button onClick={() => { setShowSignUp(true); setErr(''); }}
-                className="text-[#ff7043] hover:underline underline-offset-2 cursor-pointer font-medium transition-colors">
+                className="text-sky-300 hover:underline underline-offset-2 cursor-pointer font-medium transition-colors">
                 Sign up
               </button>
             </p>
@@ -345,7 +345,7 @@ const handleForgotPassword = async (e) => {
 
               <div className="flex justify-end">
                 <button type="button" onClick={() => { setShowForgot(true); setErr(''); }}
-                  className="text-[#ff7043]/60 text-xs font-medium hover:text-[#ff7043] cursor-pointer transition-colors hover:underline underline-offset-2">
+                  className="text-sky-300/60 text-xs font-medium hover:text-sky-300 cursor-pointer transition-colors hover:underline underline-offset-2">
                   Forgot Password?
                 </button>
               </div>
@@ -360,8 +360,8 @@ const handleForgotPassword = async (e) => {
               )}
 
               <button type="submit" disabled={loading}
-                className="w-full py-3.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-300 hover:shadow-[0_8px_28px_rgba(255,112,67,0.35)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
-                style={{ background: 'linear-gradient(135deg, #ff7043, #e64a19)' }}>
+                className="w-full py-3.5 rounded-xl text-white font-bold text-sm cursor-pointer transition-all duration-300 hover:shadow-[0_8px_28px_rgba(79,209,255,0.35)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg, #4FD1FF, #e64a19)' }}>
                 {loading ? <><Spinner /> Signing In...</> : 'Sign In'}
               </button>
             </form>

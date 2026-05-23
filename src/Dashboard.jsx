@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import exercises, { categories } from './data/exercises';
 import ParticleBackground from './components';
-import { createRepDetector } from '../repDetection.js';
+import { createRepDetector } from './repDetection.js';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useVoiceCoach from './useVoiceCoach';
@@ -352,20 +352,35 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
       <div className="relative w-full max-w-md rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
-        style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', scrollbarWidth: 'thin' }}>
-        <button onClick={handleClose} className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center text-lg cursor-pointer">✕</button>
+      
+       style={{
+  background:
+    'linear-gradient(135deg, rgba(8,12,20,0.98) 0%, rgba(4,8,16,0.99) 100%)',
+  border: '1px solid rgba(0,207,255,0.18)',
+  boxShadow: '0 0 40px rgba(0,207,255,0.08)',
+  scrollbarWidth: 'thin',
+}}
+>
+        {/* CLOSE BUTTON */}
+      <button
+        onClick={handleClose}
+        className="absolute top-4 right-4 z-50 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
+      >
+        ✕
+      </button>
+
         {step < 4 && (
           <div className="px-8 pt-6 pb-2">
             <div className="flex items-center justify-between mb-1">
               {steps.map((s, i) => (
                 <React.Fragment key={s.num}>
                   <div className="flex items-center gap-2">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.num ? 'bg-[#ff7043] text-white' : 'bg-white/10 text-gray-500'}`}>
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step >= s.num ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-400/40 shadow-[0_0_12px_rgba(0,207,255,0.3)]' : 'bg-white/10 text-gray-500'}`}>
                       {step > s.num ? <CheckCircle2 size={14} /> : s.num}
                     </div>
                     <span className={`text-xs font-semibold ${step >= s.num ? 'text-white' : 'text-gray-500'}`}>{s.label}</span>
                   </div>
-                  {i < steps.length - 1 && <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all ${step > s.num ? 'bg-[#ff7043]' : 'bg-white/10'}`} />}
+                  {i < steps.length - 1 && <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all ${step > s.num ? 'bg-cyan-400/70' : 'bg-white/10'}`} />}
                 </React.Fragment>
               ))}
             </div>
@@ -380,14 +395,17 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
               <div className="grid grid-cols-2 gap-2.5 mb-5">
                 {[{icon:Dumbbell,text:'150+ Exercises'},{icon:Bot,text:'AI Form Coaching'},{icon:Volume2,text:'AI Voice Coach'},{icon:Utensils,text:'Custom Diet Plans'},{icon:Sparkles,text:'No Ads'}].map((f) => (
                   <div key={f.text} className="bg-white/5 rounded-xl p-2.5 flex items-center gap-2">
-                    <f.icon size={16} className="text-[#ff7043]" />
+                    <f.icon size={16} className="text-cyan-300" />
                     <span className="text-white text-xs font-medium">{f.text}</span>
                   </div>
                 ))}
               </div>
               <div className="flex items-center justify-center gap-3 mb-4">
                 <span className={`text-sm font-semibold ${!isYearly ? 'text-white' : 'text-gray-500'}`}>Monthly</span>
-                <button onClick={() => setIsYearly(!isYearly)} className="relative w-12 h-6 rounded-full cursor-pointer transition-colors" style={{ backgroundColor: isYearly ? '#ff7043' : '#374151' }}>
+                <button onClick={() => setIsYearly(!isYearly)} className="relative w-12 h-6 rounded-full cursor-pointer transition-colors" style={{ backgroundColor: isYearly ? '#4FD1FF' : '#374151',
+boxShadow: isYearly
+  ? '0 0 18px rgba(79,209,255,0.45)'
+  : 'none' }}>
                   <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform" style={{ left: isYearly ? '1.6rem' : '0.125rem' }} />
                 </button>
                 <span className={`text-sm font-semibold ${isYearly ? 'text-white' : 'text-gray-500'}`}>Yearly</span>
@@ -397,48 +415,55 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
                 <div className="text-3xl font-extrabold text-white">
                   {couponApplied && <span className="text-gray-500 line-through text-lg mr-2">{priceLabel}</span>}
                   {finalPriceLabel}
-                </div>
+                </div> 
                 {couponApplied && <p className="text-green-400 text-xs mt-1 font-semibold">50% OFF applied with FITCOACH50</p>}
-              </div>
+              </div> 
               <div className="flex gap-2 mb-5">
                 <input type="text" placeholder="Coupon code" value={coupon}
                   onChange={(e) => { setCoupon(e.target.value); setCouponError(''); if (couponApplied) setCouponApplied(false); }}
-                  className="flex-1 px-3 py-2 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors" />
+                  className="flex-1 px-3 py-2 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" />
                 <button className="px-4 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20 cursor-pointer transition-colors" onClick={handleApplyCoupon}>Apply</button>
               </div>
               {couponError && <p className="text-red-400 text-xs mb-3 -mt-3">{couponError}</p>}
-              <button onClick={handleNext} className="w-full py-3.5 rounded-xl text-white font-bold text-base cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(255,112,67,0.4)] flex items-center justify-center gap-2" style={{ backgroundColor: '#ff7043' }}>
-                Continue <ArrowRight size={16} />
-              </button>
+              <button
+  onClick={handleNext}
+  className="w-full py-3.5 rounded-xl text-cyan-100 font-semibold text-base cursor-pointer transition-all border border-cyan-400/30 bg-cyan-500/10 hover:bg-cyan-500/20 hover:shadow-[0_0_25px_rgba(0,207,255,0.35)] backdrop-blur-md flex items-center justify-center gap-2 mt-4"
+>
+  Continue <ArrowRight size={16} />
+</button>
+
             </div>
+
           )}
           {step === 2 && (
+            
             <div>
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 rounded-lg bg-[#ff7043]/20 flex items-center justify-center"><User size={16} className="text-[#ff7043]" /></div>
+                <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><User size={16} className="text-sky-300" /></div>
                 <div><h3 className="text-lg font-bold text-white">Your Details</h3><p className="text-gray-400 text-xs">Required for subscription activation</p></div>
               </div>
               <div className="space-y-3">
-                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Full Name <span className="text-[#ff7043]">*</span></label><input type="text" placeholder="Enter your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /></div>
-                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Email <span className="text-[#ff7043]">*</span></label><input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /></div>
-                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Phone Number <span className="text-[#ff7043]">*</span></label><input type="tel" placeholder="9876543210" value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g,'').slice(0,10))} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /></div>
+              
+                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Full Name <span className="text-sky-300">*</span></label><input type="text" placeholder="Enter your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /></div>
+                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Email <span className="text-sky-300">*</span></label><input type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /></div>
+                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Phone Number <span className="text-sky-300">*</span></label><input type="tel" placeholder="9876543210" value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d]/g,'').slice(0,10))} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Age</label><input type="number" placeholder="25" value={age} onChange={(e) => setAge(e.target.value.replace(/[^\d]/g,'').slice(0,3))} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /></div>
-                  <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Gender</label><select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors appearance-none cursor-pointer" style={{ colorScheme: 'dark' }}><option value="" className="bg-[#1a1a2e]">Select</option><option value="male" className="bg-[#1a1a2e]">Male</option><option value="female" className="bg-[#1a1a2e]">Female</option><option value="other" className="bg-[#1a1a2e]">Other</option></select></div>
+                  <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Age</label><input type="number" placeholder="25" value={age} onChange={(e) => setAge(e.target.value.replace(/[^\d]/g,'').slice(0,3))} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /></div>
+                  <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Gender</label><select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors appearance-none cursor-pointer" style={{ colorScheme: 'dark' }}><option value="" className="bg-[#1a1a2e]">Select</option><option value="male" className="bg-[#1a1a2e]">Male</option><option value="female" className="bg-[#1a1a2e]">Female</option><option value="other" className="bg-[#1a1a2e]">Other</option></select></div>
                 </div>
-                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Fitness Goal</label><select value={fitnessGoal} onChange={(e) => setFitnessGoal(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors appearance-none cursor-pointer" style={{ colorScheme: 'dark' }}><option value="" className="bg-[#1a1a2e]">Select your goal</option><option value="weight-loss" className="bg-[#1a1a2e]">Weight Loss</option><option value="muscle-gain" className="bg-[#1a1a2e]">Muscle Gain</option><option value="flexibility" className="bg-[#1a1a2e]">Flexibility</option><option value="general" className="bg-[#1a1a2e]">General Fitness</option></select></div>
+                <div><label className="text-gray-300 text-xs font-semibold mb-1 block">Fitness Goal</label><select value={fitnessGoal} onChange={(e) => setFitnessGoal(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors appearance-none cursor-pointer" style={{ colorScheme: 'dark' }}><option value="" className="bg-[#1a1a2e]">Select your goal</option><option value="weight-loss" className="bg-[#1a1a2e]">Weight Loss</option><option value="muscle-gain" className="bg-[#1a1a2e]">Muscle Gain</option><option value="flexibility" className="bg-[#1a1a2e]">Flexibility</option><option value="general" className="bg-[#1a1a2e]">General Fitness</option></select></div>
               </div>
               {apiError && <p className="text-red-400 text-xs mt-3">{apiError}</p>}
               <div className="flex gap-3 mt-5">
                 <button onClick={handleBack} className="px-5 py-3 rounded-xl bg-white/10 text-white font-semibold text-sm cursor-pointer hover:bg-white/20 transition-colors flex items-center gap-1"><ArrowLeft size={14} /> Back</button>
-                <button onClick={handleNext} className="flex-1 py-3 rounded-xl text-white font-bold text-sm cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(255,112,67,0.4)] flex items-center justify-center gap-2" style={{ backgroundColor: '#ff7043' }}>Continue to Payment <ArrowRight size={14} /></button>
+                <button onClick={handleNext} className="flex-1 py-3 rounded-xl text-white font-bold text-sm cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(79,209,255,0.4)] flex items-center justify-center gap-2" style={{ backgroundColor: '#25a5a8' }}>Continue to Payment <ArrowRight size={14} /></button>
               </div>
             </div>
           )}
           {step === 3 && (
             <div>
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 rounded-lg bg-[#ff7043]/20 flex items-center justify-center"><CreditCard size={16} className="text-[#ff7043]" /></div>
+                <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><CreditCard size={16} className="text-sky-300" /></div>
                 <div><h3 className="text-lg font-bold text-white">UPI Payment</h3><p className="text-gray-400 text-xs">Pay securely with UPI</p></div>
               </div>
               <div className="bg-white/5 rounded-xl p-4 mb-4">
@@ -446,7 +471,7 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-gray-300">FitCoach Pro ({isYearly ? 'Yearly' : 'Monthly'})</span><span className="text-white font-semibold">{priceLabel}</span></div>
                   {couponApplied && <div className="flex justify-between"><span className="text-green-400">Coupon (FITCOACH50)</span><span className="text-green-400 font-semibold">-₹{basePrice - finalPrice}</span></div>}
-                  <div className="border-t border-white/10 pt-2 flex justify-between"><span className="text-white font-bold">Total</span><span className="text-[#ff7043] font-extrabold text-lg">₹{finalPrice}</span></div>
+                  <div className="border-t border-white/10 pt-2 flex justify-between"><span className="text-white font-bold">Total</span><span className="text-sky-300 font-extrabold text-lg">₹{finalPrice}</span></div>
                 </div>
               </div>
               <div className="mb-4">
@@ -454,19 +479,19 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
                 <div className="grid grid-cols-4 gap-2">
                   {UPI_APPS.map((app) => (
                     <button key={app.id} onClick={() => { setSelectedUpiApp(app.id); if (!upiId) setUpiId(`yourname@${app.id}`); }}
-                      className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl cursor-pointer transition-all border ${selectedUpiApp === app.id ? 'border-[#ff7043] bg-[#ff7043]/10' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
+                      className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl cursor-pointer transition-all border ${selectedUpiApp === app.id ? 'border-[#4FD1FF] bg-sky-300/70/10' : 'border-white/10 bg-white/5 hover:border-white/20'}`}>
                       <Smartphone size={18} style={{ color: app.color }} />
                       <span className="text-white text-[10px] font-medium">{app.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="mb-4"><label className="text-gray-300 text-xs font-semibold mb-1 block">UPI ID <span className="text-[#ff7043]">*</span></label><input type="text" placeholder="yourname@upi" value={upiId} onChange={(e) => setUpiId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /></div>
+              <div className="mb-4"><label className="text-gray-300 text-xs font-semibold mb-1 block">UPI ID <span className="text-sky-300">*</span></label><input type="text" placeholder="yourname@upi" value={upiId} onChange={(e) => setUpiId(e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-white/10 text-white placeholder-gray-500 text-sm outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /></div>
               <div className="flex items-center gap-2 mb-3 bg-green-400/5 rounded-xl p-3"><Shield size={14} className="text-green-400 shrink-0" /><p className="text-green-400/80 text-[10px] leading-relaxed">Your payment is secured with bank-grade encryption. We never store your UPI PIN.</p></div>
               {apiError && <p className="text-red-400 text-xs mb-3">{apiError}</p>}
               <div className="flex gap-3">
                 <button onClick={handleBack} className="px-5 py-3 rounded-xl bg-white/10 text-white font-semibold text-sm cursor-pointer hover:bg-white/20 transition-colors flex items-center gap-1"><ArrowLeft size={14} /> Back</button>
-                <button onClick={handleSimulatedPayment} disabled={processing} className="flex-1 py-3 rounded-xl text-white font-bold text-sm cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(255,112,67,0.4)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: '#ff7043' }}>
+                <button onClick={handleSimulatedPayment} disabled={processing} className="flex-1 py-3 rounded-xl text-white font-bold text-sm cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(79,209,255,0.4)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: '#4FD1FF' }}>
                   {processing ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Processing...</> : `Pay ₹${finalPrice} via UPI`}
                 </button>
               </div>
@@ -479,10 +504,10 @@ function PaymentModal({ isOpen, onClose, onUpgrade }) {
               <p className="text-gray-400 text-sm mb-5">Your subscription is now active. Enjoy unlimited access!</p>
               <div className="bg-white/5 rounded-xl p-4 mb-5 text-left space-y-2">
                 <div className="flex justify-between text-sm"><span className="text-gray-400">Plan</span><span className="text-white font-semibold">{isYearly ? 'Yearly' : 'Monthly'}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-gray-400">Amount Paid</span><span className="text-[#ff7043] font-bold">₹{finalPrice}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-gray-400">Amount Paid</span><span className="text-sky-300 font-bold">₹{finalPrice}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-gray-400">Name</span><span className="text-white font-semibold">{fullName}</span></div>
               </div>
-              <button onClick={handleClose} className="w-full py-3.5 rounded-xl text-white font-bold text-base cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(255,112,67,0.4)]" style={{ backgroundColor: '#ff7043' }}>Start Training</button>
+              <button onClick={handleClose} className="w-full py-3.5 rounded-xl text-white font-bold text-base cursor-pointer transition-all hover:shadow-[0_8px_28px_rgba(79,209,255,0.4)]" style={{ backgroundColor: '#4FD1FF' }}>Start Training</button>
             </div>
           )}
         </div>
@@ -532,6 +557,12 @@ export default function Dashboard() {
   const poseReadyRef      = useRef(false);
   const workoutStartRef   = useRef(0);
   const repCountRef       = useRef(0);
+  const calibrationRef = useRef({
+  calibrated: false,
+  repsObserved: 0,
+  learnedMin: null,
+  learnedMax: null,
+});
   const timerIntervalRef  = useRef(null);
   const cameraInstanceRef = useRef(null);
   const poseInstanceRef   = useRef(null);
@@ -546,6 +577,7 @@ export default function Dashboard() {
   const currentExerciseRef= useRef(null);
   const animationFrameRef = useRef(null);
   const lastUIUpdateRef   = useRef(0);
+  const feedbackThrottleRef = useRef(0);
   // ── NEW: forgiving rep detector instance ──────────────────
   const repDetectorRef    = useRef(null);
 
@@ -625,131 +657,236 @@ export default function Dashboard() {
   }, [showToast]);
 
   // ==================== onResults ====================
-  const onResults = useCallback((results) => {
-    const currentExercise = currentExerciseRef.current;
-    if (!results.poseLandmarks || results.poseLandmarks.length < 33 || !currentExercise) return;
+// ═══════════════════════════════════════════════════════════════════
+// SECTION A — Replace your <canvas> line (inside camera JSX block)
+// ═══════════════════════════════════════════════════════════════════
 
-    if (modelLoadingRef.current) {
-      modelLoadingRef.current = false; setModelLoading(false); setLoadingStep(4);
-      setTimeout(() => setLoadingStep(0), 800);
-    }
+// OLD:
+// <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
 
-    const landmarks = results.poseLandmarks;
+// NEW:
+// <canvas
+//   ref={canvasRef}
+//   className="absolute top-0 left-0 w-full h-full"
+//   style={{ transform: 'scaleX(-1)', pointerEvents: 'none' }}
+// />
 
-    if (!poseReadyRef.current) {
-      poseReadyRef.current = true; workoutStartRef.current = Date.now(); setTimer('0:00');
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = setInterval(() => {
-        const elapsed = Date.now() - workoutStartRef.current;
-        setTimer(formatTime(elapsed));
-        updateDailyProgress(caloriesBurnedRef.current, Math.floor(elapsed/1000), repCountRef.current);
-      }, 1000);
-    }
 
-    // ── Draw skeleton (mirrored X) ────────────────────────
-    const canvas = canvasRef.current, video = videoRef.current;
-    if (canvas && video) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const vw = video.videoWidth||640, vh = video.videoHeight||480;
-        if (canvas.width !== vw) canvas.width = vw;
-        if (canvas.height !== vh) canvas.height = vh;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const mx = (lm) => (1 - lm.x) * canvas.width;
-        const my = (lm) => lm.y * canvas.height;
-        const connectionGroups = [
-          { pairs: [[11,13],[13,15]], color: '#00ff88' },
-          { pairs: [[12,14],[14,16]], color: '#00ccff' },
-          { pairs: [[11,12]], color: '#ffaa00' },
-          { pairs: [[11,23],[12,24],[23,24]], color: '#ff7043' },
-          { pairs: [[23,25],[25,27]], color: '#00ff88' },
-          { pairs: [[24,26],[26,28]], color: '#00ccff' },
-        ];
-        connectionGroups.forEach((group) => {
-          group.pairs.forEach(([a, b]) => {
-            const lmA = landmarks[a], lmB = landmarks[b];
-            if (!lmA||!lmB||(lmA.visibility??0)<0.4||(lmB.visibility??0)<0.4) return;
-            const opacity = Math.min(1, (((lmA.visibility??0)+(lmB.visibility??0))/2) * 1.2);
-            ctx.beginPath(); ctx.moveTo(mx(lmA),my(lmA)); ctx.lineTo(mx(lmB),my(lmB));
-            ctx.strokeStyle=group.color; ctx.lineWidth=3; ctx.globalAlpha=opacity*0.8; ctx.lineCap='round'; ctx.stroke(); ctx.globalAlpha=1;
-          });
+// ═══════════════════════════════════════════════════════════════════
+// SECTION B — Complete fixed onResults (replace your entire onResults)
+// ═══════════════════════════════════════════════════════════════════
+
+const onResults = useCallback((results) => {
+  const currentExercise = currentExerciseRef.current;
+  if (!results.poseLandmarks || results.poseLandmarks.length < 33 || !currentExercise) return;
+
+  if (modelLoadingRef.current) {
+    modelLoadingRef.current = false;
+    setModelLoading(false);
+    setLoadingStep(4);
+    setTimeout(() => setLoadingStep(0), 800);
+  }
+
+  const landmarks = results.poseLandmarks;
+
+  if (!poseReadyRef.current) {
+    poseReadyRef.current = true;
+    workoutStartRef.current = Date.now();
+    setTimer('0:00');
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - workoutStartRef.current;
+      setTimer(formatTime(elapsed));
+      updateDailyProgress(caloriesBurnedRef.current, Math.floor(elapsed / 1000), repCountRef.current);
+    }, 1000);
+  }
+
+  // ── Draw skeleton ──────────────────────────────────────────────
+  // NOTE: canvas has scaleX(-1) applied via style, so we draw in
+  // ORIGINAL (unmirrored) coordinate space — no x-flip needed here.
+  const canvas = canvasRef.current;
+  const video  = videoRef.current;
+  if (canvas && video) {
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const vw = video.videoWidth  || 640;
+      const vh = video.videoHeight || 480;
+      if (canvas.width  !== vw) canvas.width  = vw;
+      if (canvas.height !== vh) canvas.height = vh;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw in original coordinate space (canvas CSS handles the mirror)
+      const px = (lm) => lm.x * canvas.width;
+      const py = (lm) => lm.y * canvas.height;
+
+      const connectionGroups = [
+        { pairs: [[11,13],[13,15]], color: '#00ff88' },
+        { pairs: [[12,14],[14,16]], color: '#00ccff' },
+        { pairs: [[11,12]],        color: '#ffaa00' },
+        { pairs: [[11,23],[12,24],[23,24]], color: '#4FD1FF' },
+        { pairs: [[23,25],[25,27]], color: '#00ff88' },
+        { pairs: [[24,26],[26,28]], color: '#00ccff' },
+      ];
+
+      connectionGroups.forEach(({ pairs, color }) => {
+        pairs.forEach(([a, b]) => {
+          const lmA = landmarks[a], lmB = landmarks[b];
+          if (!lmA || !lmB || (lmA.visibility ?? 0) < 0.4 || (lmB.visibility ?? 0) < 0.4) return;
+          const opacity = Math.min(1, (((lmA.visibility ?? 0) + (lmB.visibility ?? 0)) / 2) * 1.2);
+          ctx.beginPath();
+          ctx.moveTo(px(lmA), py(lmA));
+          ctx.lineTo(px(lmB), py(lmB));
+          ctx.strokeStyle = color;
+          ctx.lineWidth   = 3;
+          ctx.globalAlpha = opacity * 0.85;
+          ctx.lineCap     = 'round';
+          ctx.stroke();
+          ctx.globalAlpha = 1;
         });
-        const majorJoints = new Set([11,12,13,14,15,16,23,24,25,26,27,28]);
-        landmarks.forEach((lm, i) => {
-          const vis = lm.visibility??0; if (vis < 0.4) return;
-          const isMajor = majorJoints.has(i);
-          ctx.beginPath(); ctx.arc(mx(lm),my(lm),isMajor?5:3,0,Math.PI*2);
-          ctx.fillStyle=isMajor?'#00ff88':`rgba(255,255,255,${vis*0.8})`; ctx.globalAlpha=vis; ctx.fill(); ctx.globalAlpha=1;
-        });
-      }
+      });
+
+      const majorJoints = new Set([11,12,13,14,15,16,23,24,25,26,27,28]);
+      landmarks.forEach((lm, i) => {
+        const vis = lm.visibility ?? 0;
+        if (vis < 0.4) return;
+        const isMajor = majorJoints.has(i);
+        ctx.beginPath();
+        ctx.arc(px(lm), py(lm), isMajor ? 5 : 3, 0, Math.PI * 2);
+        ctx.fillStyle   = isMajor ? '#00ff88' : `rgba(255,255,255,${vis * 0.8})`;
+        ctx.globalAlpha = vis;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
     }
+  }
 
-    // ── Angle detection ───────────────────────────────────
-    const { angle: rawAngle, confidence } = calculateAngle(landmarks, currentExercise.track);
+  // ── Angle ──────────────────────────────────────────────────────
+  const { angle: rawAngle, confidence } = calculateAngle(landmarks, currentExercise.track);
+  const formConfidence =
+    confidence * ((landmarks[11]?.visibility || 0) + (landmarks[12]?.visibility || 0)) / 2;
 
-    // ── Ensure detector exists (safety guard) ────────────
-    if (!repDetectorRef.current) {
-      repDetectorRef.current = createRepDetector(currentExercise, null);
-    }
-    const detector = repDetectorRef.current;
+  if (!repDetectorRef.current) {
+    repDetectorRef.current = createRepDetector(currentExercise, null);
+  }
 
-    // ── UI angle display (throttled to 100ms) ─────────────
-    if (rawAngle > 0 && rawAngle <= 360) {
-      const displayAngle = detector.getSmoothed() ?? rawAngle;
-      if (Date.now() - lastUIUpdateRef.current > 100) {
-        lastUIUpdateRef.current = Date.now();
-        setCurrentAngles(prev => ({ ...prev, [currentExercise.track]: Math.round(displayAngle) }));
-        currentExercise.form.forEach((f) => {
-          if (f.joint !== currentExercise.track && f.joint !== 'back') {
-            const fR = calculateAngle(landmarks, f.joint);
-            if (fR.angle > 0 && fR.angle <= 360) {
-              setCurrentAngles(prev => ({ ...prev, [f.joint]: Math.round(fR.angle) }));
-            }
+  const detector = repDetectorRef.current;
+  const { counted, smoothed, calibStatus, fatigueStatus } = detector.processAngle(rawAngle);
+
+  // Update calibrationRef for the angle tile display
+  calibrationRef.current = {
+    calibrated:    !calibStatus.active,
+    repsObserved:  calibStatus.repsObserved,
+    learnedMin:    calibStatus.learnedMin,
+    learnedMax:    calibStatus.learnedMax,
+  };
+
+  // Save calibration to localStorage ONLY once when it completes (not every frame)
+  if (!calibStatus.active && calibStatus.repsObserved >= 3) {
+    try {
+      localStorage.setItem(
+        `calibration_${currentExercise.id}`,
+        JSON.stringify(calibrationRef.current)
+      );
+    } catch(e) {}
+  }
+
+  // ── UI angle display (throttled 100ms) ────────────────────────
+  if (rawAngle > 0 && rawAngle <= 360) {
+    const displayAngle = detector?.getSmoothed?.() ?? rawAngle;
+    if (Date.now() - lastUIUpdateRef.current > 100) {
+      lastUIUpdateRef.current = Date.now();
+      setCurrentAngles(prev => ({ ...prev, [currentExercise.track]: Math.round(displayAngle) }));
+      currentExercise.form.forEach((f) => {
+        if (f.joint !== currentExercise.track && f.joint !== 'back') {
+          const fR = calculateAngle(landmarks, f.joint);
+          if (fR.angle > 0 && fR.angle <= 360) {
+            setCurrentAngles(prev => ({ ...prev, [f.joint]: Math.round(fR.angle) }));
           }
-        });
+        }
+      });
+    }
+  }
+ // ── Voice coach (once per frame) ──
+    voiceCoachOnAngle(smoothed,currentExercise,repCountRef.current);
+
+    // ── Count rep ──
+    if(counted&&formConfidence>0.65){
+      const newCount=repCountRef.current+1;
+      repCountRef.current=newCount;
+      setRepCount(newCount);
+      const currentCals=Math.round(newCount*getCalPerRep(currentExercise));
+      caloriesBurnedRef.current=currentCals;
+      setCaloriesBurned(currentCals);
+      checkAutoDifficulty(currentExercise,newCount,smoothed);
+    }
+  if (confidence < 0.3 || rawAngle <= 0 || rawAngle > 360) return;
+  // ── AI feedback (throttled 700ms) ─────────────────────────────
+  const now = Date.now();
+  if (!feedbackThrottleRef.current || now - feedbackThrottleRef.current > 700) {
+    feedbackThrottleRef.current = now;
+
+    if (!calibStatus.active && calibStatus.repsObserved >= 3) {
+      setCoachFeedback(
+        `AI calibrated ✓ ROM: ${Math.round(calibStatus.learnedMin)}° → ${Math.round(calibStatus.learnedMax)}°`
+      );
+    }
+
+    if (fatigueStatus.fatigued && fatigueStatus.romRatio != null) {
+      const percent = Math.round(fatigueStatus.romRatio * 100);
+      setCoachFeedback(
+        `You're getting tired — maintain full range (${percent}% ROM)`
+      );
+      if (voiceCoach?.speak) {
+        voiceCoach.speak('You are getting tired. Focus on full range of motion.');
       }
     }
+  }
 
-    if (confidence < 0.3 || rawAngle <= 0 || rawAngle > 360) return;
-
-    // ── Forgiving rep detection ───────────────────────────
-    const counted = detector.processAngle(
-      rawAngle,
-      currentExercise.downThreshold,
-      currentExercise.upThreshold
-    );
-
-    // ── Sync smoothed angle to ref for voice coach ────────
-    smoothedAngleRef.current = detector.getSmoothed();
-    const angle = smoothedAngleRef.current || rawAngle;
-
-    // ── Voice coach (every frame) ─────────────────────────
-    voiceCoachOnAngle(angle, currentExercise, repCountRef.current);
-
-    // ── Count rep if detector says so ────────────────────
-    if (counted) {
-      const newCount = repCountRef.current + 1;
-      repCountRef.current = newCount;
-      setRepCount(newCount);
-      const currentCals = Math.round(newCount * getCalPerRep(currentExercise));
-      caloriesBurnedRef.current = currentCals;
-      setCaloriesBurned(currentCals);
-      checkAutoDifficulty(currentExercise, newCount, angle);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkAutoDifficulty, updateDailyProgress, voiceCoachOnAngle]);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [checkAutoDifficulty, updateDailyProgress, voiceCoachOnAngle]);
 
   onResultsRef.current = onResults;
+  const stopWorkout = useCallback(() => {
+
+  // Stop workout loop
+  isWorkingOutRef.current = false;
+
+  // Update UI
+  setIsWorkingOut(false);
+
+  // Stop animation frame
+  if (animationFrameRef.current) {
+    cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = null;
+  }
+
+  // Stop camera
+  if (cameraInstanceRef.current) {
+    cameraInstanceRef.current.stop();
+    cameraInstanceRef.current = null;
+  }
+
+  console.log("Workout stopped");
+
+}, []);
 
   const startWorkout = useCallback(async (exerciseParam) => {
     const exercise = exerciseParam || currentExerciseRef.current;
+    const savedCalibration = localStorage.getItem(
+  `calibration_${exercise.id}`
+);
+
+let calibrationData = null;
+
+if (savedCalibration) {
+  calibrationData = JSON.parse(savedCalibration);
+}
     if (isWorkingOutRef.current) return;
     if (!exercise) return;
 
     // ── Reset all counters ────────────────────────────────
     setRepCount(0); repCountRef.current = 0; poseReadyRef.current = false;
     goodFormCountRef.current = 0; lastDiffSuggRef.current = 0;
-    smoothedAngleRef.current = null;
     setTimer('Preparing...'); setCaloriesBurned(0); caloriesBurnedRef.current = 0;
     setCoachFeedback(''); setCurrentAngles({}); setCameraError('');
     setModelLoading(true); modelLoadingRef.current = true; setLoadingStep(1); loadingStepRef.current = 1;
@@ -758,7 +895,8 @@ export default function Dashboard() {
 
     // ── Init forgiving detector for this exercise ─────────
     if (repDetectorRef.current) repDetectorRef.current.reset();
-    repDetectorRef.current = createRepDetector(exercise, null);
+    repDetectorRef.current =
+  createRepDetector(exercise, calibrationData);
 
     isWorkingOutRef.current = true;
     setIsWorkingOut(true);
@@ -995,13 +1133,13 @@ clearInterval(tipInterval);
         style={{ background:'rgba(10,10,30,0.97)', backdropFilter:'blur(16px)', WebkitBackdropFilter:'blur(16px)', borderBottom:'1px solid rgba(255,255,255,0.06)', boxShadow:'0 2px 16px rgba(0,0,0,0.4)', paddingTop:'env(safe-area-inset-top, 0px)' }}>
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#ff7043]/20 flex items-center justify-center"><Dumbbell size={18} className="text-[#ff7043]" /></div>
-            <h1 className="text-lg font-extrabold tracking-tight" style={{ color:'#ff7043', fontFamily:'Syne, DM Sans, sans-serif' }}>FitCoach AI</h1>
+            <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Dumbbell size={18} className="text-sky-300" /></div>
+            <h1 className="text-lg font-extrabold tracking-tight" style={{ color:'#4FD1FF', fontFamily:'Syne, DM Sans, sans-serif' }}>FitCoach AI</h1>
             {isPremium && <span className="text-[9px] font-bold bg-yellow-400/20 text-yellow-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Crown size={8} /> PRO</span>}
           </div>
           <div className="flex items-center gap-2">
             {!isPremium && (
-              <button onClick={() => setShowPaymentModal(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold text-white cursor-pointer transition-all hover:shadow-[0_4px_12px_rgba(255,112,67,0.3)]" style={{ backgroundColor:'#ff7043' }}>
+              <button onClick={() => setShowPaymentModal(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold text-white cursor-pointer transition-all hover:shadow-[0_4px_12px_rgba(79,209,255,0.3)]" style={{ backgroundColor:'#2f86a5' }}>
                 <Crown size={11} /> Pro
               </button>
             )}
@@ -1022,7 +1160,7 @@ clearInterval(tipInterval);
             {[{key:'workout',label:'Workout',icon:Dumbbell},{key:'diet',label:'Diet',icon:Utensils}].map((tab) => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300 ${activeTab===tab.key ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                style={activeTab===tab.key ? { background:'linear-gradient(135deg, #ff7043, #ff9a76)', boxShadow:'0 2px 12px rgba(255,112,67,0.35)' } : {}}>
+                style={activeTab===tab.key ? { background:'linear-gradient(135deg, #4FD1FF, #ff9a76)', boxShadow:'0 2px 12px rgba(79,209,255,0.35)' } : {}}>
                 <tab.icon size={16} /> {tab.label}
               </button>
             ))}
@@ -1041,18 +1179,18 @@ clearInterval(tipInterval);
                 <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background:'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
                   <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-[#ff7043]/20 flex items-center justify-center"><Trophy size={16} className="text-[#ff7043]" /></div>
+                      <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Trophy size={16} className="text-sky-300" /></div>
                       <div><h2 className="text-white font-bold text-sm leading-tight">Daily Target</h2><p className="text-gray-400 text-[10px]">Today's Progress</p></div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 bg-[#ff7043]/10 rounded-lg px-2 py-1"><FlameKindling size={12} className="text-orange-400" /><span className="text-orange-300 text-[10px] font-bold">{streak.current}d</span></div>
+                      <div className="flex items-center gap-1 bg-sky-300/70/10 rounded-lg px-2 py-1"><FlameKindling size={12} className="text-orange-400" /><span className="text-orange-300 text-[10px] font-bold">{streak.current}d</span></div>
                       <button onClick={() => { const reset={date:getTodayKey(),calories:0,workoutSeconds:0,reps:0,workoutsCompleted:0}; setDailyProgress(reset); saveDailyProgress(reset); saveToWeeklyHistory(reset); setWeeklyData(loadWeeklyProgress()); showToast('Daily progress reset!'); }} className="w-8 h-8 rounded-lg bg-red-500/10 hover:bg-red-500/20 flex items-center justify-center cursor-pointer transition-colors"><RotateCcw size={14} className="text-red-400" /></button>
                       <button onClick={() => { setEditCalTarget(String(dailyTargets.calories)); setEditMinTarget(String(dailyTargets.workoutMin)); setEditRepTarget(String(dailyTargets.reps)); setEditingTargets(!editingTargets); }} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center cursor-pointer transition-colors"><Edit3 size={14} className="text-gray-400" /></button>
                     </div>
                   </div>
                   <div className="px-5 pb-4 flex items-center justify-around">
                     <div className="flex flex-col items-center">
-                      <div className="relative"><ProgressRing progress={(dailyProgress.calories/dailyTargets.calories)*100} size={68} strokeWidth={5} color="#ff7043" bgColor="rgba(255,112,67,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><Flame size={16} className="text-[#ff7043]" /></div></div>
+                      <div className="relative"><ProgressRing progress={(dailyProgress.calories/dailyTargets.calories)*100} size={68} strokeWidth={5} color="#4FD1FF" bgColor="rgba(79,209,255,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><Flame size={16} className="text-sky-300" /></div></div>
                       <div className="mt-1.5 text-center"><div className="text-white font-extrabold text-base leading-tight">{dailyProgress.calories}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.calories} kcal</div></div>
                     </div>
                     <div className="flex flex-col items-center">
@@ -1060,7 +1198,7 @@ clearInterval(tipInterval);
                       <div className="mt-1.5 text-center"><div className="text-white font-extrabold text-base leading-tight">{Math.floor(dailyProgress.workoutSeconds/60)}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.workoutMin} min</div></div>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="relative"><ProgressRing progress={(dailyProgress.reps/dailyTargets.reps)*100} size={68} strokeWidth={5} color="#3b82f6" bgColor="rgba(59,130,246,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><RotateCcw size={16} className="text-blue-400" /></div></div>
+                      <div className="relative"><ProgressRing progress={(dailyProgress.reps/dailyTargets.reps)*100} size={68} strokeWidth={5} color="#4FD1FF" bgColor="rgba(79,209,255,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><RotateCcw size={16} className="text-blue-400" /></div></div>
                       <div className="mt-1.5 text-center"><div className="text-white font-extrabold text-base leading-tight">{dailyProgress.reps}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.reps} reps</div></div>
                     </div>
                   </div>
@@ -1073,8 +1211,8 @@ clearInterval(tipInterval);
                         const isToday = i === weeklyData.length-1;
                         return (
                           <div key={d.day} className="flex-1 flex flex-col items-center gap-0.5">
-                            <div className="w-full rounded-sm transition-all duration-500" style={{ height:`${height}px`, backgroundColor:isToday?'#ff7043':d.calories>0?'rgba(255,112,67,0.3)':'rgba(255,255,255,0.08)' }} />
-                            <span className={`text-[8px] ${isToday?'text-[#ff7043] font-bold':'text-gray-500'}`}>{d.day}</span>
+                            <div className="w-full rounded-sm transition-all duration-500" style={{ height:`${height}px`, backgroundColor:isToday?'#4FD1FF':d.calories>0?'rgba(79,209,255,0.3)':'rgba(255,255,255,0.08)' }} />
+                            <span className={`text-[8px] ${isToday?'text-sky-300 font-bold':'text-gray-500'}`}>{d.day}</span>
                           </div>
                         );
                       })}
@@ -1082,15 +1220,15 @@ clearInterval(tipInterval);
                   </div>
                   {editingTargets && (
                     <div className="mx-5 mb-4 bg-white/5 rounded-xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 mb-2"><CalendarDays size={14} className="text-[#ff7043]" /><span className="text-white text-sm font-bold">Set Your Targets</span></div>
+                      <div className="flex items-center gap-2 mb-2"><CalendarDays size={14} className="text-sky-300" /><span className="text-white text-sm font-bold">Set Your Targets</span></div>
                       <div className="grid grid-cols-3 gap-3">
-                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Calories</label><input type="number" value={editCalTarget} onChange={(e) => setEditCalTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /><span className="text-gray-500 text-[9px]">kcal</span></div>
-                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Workout</label><input type="number" value={editMinTarget} onChange={(e) => setEditMinTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /><span className="text-gray-500 text-[9px]">minutes</span></div>
-                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Reps</label><input type="number" value={editRepTarget} onChange={(e) => setEditRepTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-[#ff7043] transition-colors" /><span className="text-gray-500 text-[9px]">reps</span></div>
+                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Calories</label><input type="number" value={editCalTarget} onChange={(e) => setEditCalTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /><span className="text-gray-500 text-[9px]">kcal</span></div>
+                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Workout</label><input type="number" value={editMinTarget} onChange={(e) => setEditMinTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /><span className="text-gray-500 text-[9px]">minutes</span></div>
+                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Reps</label><input type="number" value={editRepTarget} onChange={(e) => setEditRepTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /><span className="text-gray-500 text-[9px]">reps</span></div>
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => setEditingTargets(false)} className="flex-1 py-2 rounded-lg bg-white/10 text-gray-400 text-xs font-semibold cursor-pointer hover:bg-white/15 transition-colors">Cancel</button>
-                        <button onClick={saveTargetEdits} className="flex-1 py-2 rounded-lg text-white text-xs font-bold cursor-pointer transition-all" style={{ backgroundColor:'#ff7043' }}>Save Targets</button>
+                        <button onClick={saveTargetEdits} className="flex-1 py-2 rounded-lg text-white text-xs font-bold cursor-pointer transition-all" style={{ backgroundColor:'#4FD1FF' }}>Save Targets</button>
                       </div>
                     </div>
                   )}
@@ -1100,7 +1238,7 @@ clearInterval(tipInterval);
                 <div className="flex gap-2 flex-wrap">
                   {categories.map((cat) => (
                     <button key={cat} onClick={() => setSelectedCategory(cat)}
-                      className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${selectedCategory===cat ? 'bg-[#ff7043] text-white shadow-md shadow-[#ff7043]/30' : 'bg-white/10 text-gray-300 hover:bg-white/15 border border-white/10'}`}>
+                      className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${selectedCategory===cat ? 'bg-sky-400/15 text-sky-200 border border-sky-300/30 shadow-[0_0_12px_rgba(79,209,255,0.25)]shadow-md' : 'bg-white/10 text-gray-300 hover:bg-white/15 border border-white/10'}`}>
                       {React.createElement(categoryIcons[cat]||HomeIcon, { size:14 })} {cat}
                     </button>
                   ))}
@@ -1110,7 +1248,7 @@ clearInterval(tipInterval);
                 <div className="flex gap-2 flex-wrap">
                   {['All','Easy','Medium','Hard'].map((d) => (
                     <button key={d} onClick={() => setDifficultyFilter(d)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold cursor-pointer transition-all ${difficultyFilter===d ? 'bg-[#ff7043]/80 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/15 border border-white/10'}`}>
+                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold cursor-pointer transition-all ${difficultyFilter===d ? 'bg-sky-300/70/80 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/15 border border-white/10'}`}>
                       {d}
                     </button>
                   ))}
@@ -1120,7 +1258,7 @@ clearInterval(tipInterval);
                   <div className="rounded-xl py-2.5 px-3 flex items-center gap-2" style={{ background:'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
                     <Crown size={18} className="text-yellow-400 shrink-0" />
                     <p className="text-white text-xs font-semibold flex-1 min-w-0">Unlock 150+ Exercises & AI Coaching</p>
-                    <button onClick={() => setShowPaymentModal(true)} className="px-3 py-1.5 rounded-lg text-white font-bold text-[10px] cursor-pointer transition-all whitespace-nowrap flex items-center gap-1 shrink-0" style={{ backgroundColor:'#ff7043' }}><Sparkles size={10} /> Pro</button>
+                    <button onClick={() => setShowPaymentModal(true)} className="px-3 py-1.5 rounded-lg text-white font-bold text-[10px] cursor-pointer transition-all whitespace-nowrap flex items-center gap-1 shrink-0" style={{ backgroundColor:'#2f86a5' }}><Sparkles size={10} /> Pro</button>
                   </div>
                 )}
 
@@ -1128,10 +1266,10 @@ clearInterval(tipInterval);
                 <div className="grid grid-cols-2 gap-3">
                   {filteredExercises.map((ex) => (
                     <button key={ex.id} onClick={() => handleExerciseClick(ex)}
-                      className={`relative p-3 rounded-xl text-left cursor-pointer transition-all active:scale-[0.97] ${ex.premium&&!isPremium?'opacity-80':''} bg-white/5 border border-white/10 hover:border-[#ff7043]/50 hover:bg-white/10`}>
-                      {ex.premium && !isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Lock size={10} className="text-gray-400" /><span className="text-[10px] font-bold text-[#ff7043] bg-[#ff7043]/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
+                      className={`relative p-3 rounded-xl text-left cursor-pointer transition-all active:scale-[0.97] ${ex.premium&&!isPremium?'opacity-80':''} bg-white/5 border border-white/10 hover:border-[#4FD1FF]/50 hover:bg-white/10`}>
+                      {ex.premium && !isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Lock size={10} className="text-gray-400" /><span className="text-[10px] font-bold text-sky-300 bg-sky-300/70/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
                       {ex.premium && isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Crown size={10} className="text-yellow-400" /><span className="text-[10px] font-bold text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
-                      <div className="mb-0.5 text-[#ff7043]">{getCategoryIcon(ex.category, 18)}</div>
+                      <div className="mb-0.5 text-sky-300">{getCategoryIcon(ex.category, 18)}</div>
                       <div className="font-semibold text-xs text-white leading-tight pr-7">{ex.name}</div>
                       <div className="flex items-center gap-1 mt-1.5">
                         <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${getDifficultyColor(ex.difficulty)}`}>{ex.difficulty.charAt(0).toUpperCase()+ex.difficulty.slice(1)}</span>
@@ -1147,15 +1285,15 @@ clearInterval(tipInterval);
                 <div className="relative rounded-xl overflow-hidden" style={{ background:'#1a1a2e' }}>
                   <div className="relative w-full" style={{ minHeight:'200px' }}>
                     <video ref={videoRef} className="w-full h-auto rounded-xl" style={{ transform:'scaleX(-1)', maxHeight:'40vh', objectFit:'cover' }} autoPlay playsInline muted />
-                    <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
+                     <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" style={{ transform: 'scaleX(-1)', pointerEvents: 'none' }} />
                     {(modelLoading || loadingStep === 4) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a2e]/90 backdrop-blur-md z-10">
                         <div className="text-center px-4 max-w-xs">
                           <div className="relative mx-auto w-20 h-20 mb-5">
-                            <div className="absolute inset-0 rounded-full bg-[#ff7043]/20 animate-ping" style={{ animationDuration:'2s' }} />
-                            <div className="absolute inset-2 rounded-full bg-[#ff7043]/30 animate-pulse" />
+                            <div className="absolute inset-0 rounded-full bg-sky-300/70/20 animate-ping" style={{ animationDuration:'2s' }} />
+                            <div className="absolute inset-2 rounded-full bg-sky-300/70/30 animate-pulse" />
                             <div className="absolute inset-3 rounded-full bg-[#1a1a2e] flex items-center justify-center">
-                              {loadingStep===4 ? <CheckCircle2 size={28} className="text-green-400 animate-bounce" /> : <Brain size={28} className="text-[#ff7043]" />}
+                              {loadingStep===4 ? <CheckCircle2 size={28} className="text-green-400 animate-bounce" /> : <Brain size={28} className="text-sky-300" />}
                             </div>
                           </div>
                           <div className="mb-4">
@@ -1165,7 +1303,7 @@ clearInterval(tipInterval);
                           <div className="flex items-center justify-center gap-2 mb-5">
                             {LOADING_STEPS.map((step, i) => (
                               <div key={step.key} className="flex items-center">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-500 ${loadingStep>i+1||loadingStep===4?'bg-green-500/20 text-green-400':loadingStep===i+1?'bg-[#ff7043]/20 text-[#ff7043] scale-110':'bg-white/5 text-gray-500'}`}>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-500 ${loadingStep>i+1||loadingStep===4?'bg-green-500/20 text-green-400':loadingStep===i+1?'bg-sky-300/70/20 text-sky-300 scale-110':'bg-white/5 text-gray-500'}`}>
                                   {loadingStep>i+1||loadingStep===4?<CheckCircle2 size={14}/>:loadingStep===i+1?<Loader2 size={14} className="animate-spin"/>:<step.icon size={12}/>}
                                 </div>
                                 {i < LOADING_STEPS.length-1 && <div className={`w-4 h-0.5 mx-1 rounded-full transition-all duration-500 ${loadingStep>i+1?'bg-green-500/50':'bg-white/10'}`} />}
@@ -1174,7 +1312,7 @@ clearInterval(tipInterval);
                           </div>
                           {loadingStep < 4 && (
                             <div className="bg-white/5 rounded-xl px-4 py-2.5 flex items-center gap-2" key={loadingTip}>
-                              {React.createElement(LOADING_TIPS[loadingTip]?.icon||Flame, { size:14, className:'text-[#ff7043] shrink-0' })}
+                              {React.createElement(LOADING_TIPS[loadingTip]?.icon||Flame, { size:14, className:'text-sky-300 shrink-0' })}
                               <span className="text-gray-300 text-xs text-left">{LOADING_TIPS[loadingTip]?.text}</span>
                             </div>
                           )}
@@ -1189,7 +1327,7 @@ clearInterval(tipInterval);
                   </div>
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
                     <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-1 min-w-0">
-                      <span className="text-[#ff7043] shrink-0">{getCategoryIcon(currentExercise?.category||'Home', 12)}</span>
+                      <span className="text-sky-300 shrink-0">{getCategoryIcon(currentExercise?.category||'Home', 12)}</span>
                       <span className="text-white font-bold text-xs truncate">{currentExercise?.name}</span>
                     </div>
                     <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1.5 shrink-0">
@@ -1202,7 +1340,7 @@ clearInterval(tipInterval);
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
                     <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-0.5"><RotateCcw size={9} /> Reps</div>
-                    <div className="text-2xl font-extrabold text-[#ff7043]">{repCount}</div>
+                    <div className="text-2xl font-extrabold text-sky-300">{repCount}</div>
                   </div>
                   <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
                     <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-0.5"><Timer size={9} /> Time</div>
@@ -1216,6 +1354,11 @@ clearInterval(tipInterval);
                   <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
                     <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-0.5"><Activity size={9} /> Angle</div>
                     <div className="text-2xl font-extrabold text-white">{getAngleDisplay()}</div>
+                    <div className="text-[9px] text-green-400">
+  {calibrationRef.current.calibrated
+    ? 'AI Personalized'
+    : `Learning... ${calibrationRef.current.repsObserved}/3`}
+</div>
                     <div className="text-[9px] text-gray-500">{currentExercise?.track||''}</div>
                   </div>
                 </div>
@@ -1223,25 +1366,25 @@ clearInterval(tipInterval);
                 {/* AI Coach Feedback */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <Bot size={16} className="text-[#ff7043]" />
+                    <Bot size={16} className="text-sky-300" />
                     <h3 className="font-bold text-xs text-white">AI Coach</h3>
-                    {isPremium && <span className="text-[9px] font-bold text-[#ff7043] bg-[#ff7043]/10 px-1.5 py-0.5 rounded-full">LIVE</span>}
+                    {isPremium && <span className="text-[9px] font-bold text-sky-300 bg-sky-300/70/10 px-1.5 py-0.5 rounded-full">LIVE</span>}
                   </div>
                   <p className="text-xs text-gray-300 whitespace-pre-line">{coachFeedback || 'Start moving to get feedback...'}</p>
-                  {!isPremium && <button onClick={() => setShowPaymentModal(true)} className="mt-1.5 text-[10px] text-[#ff7043] font-semibold hover:underline cursor-pointer flex items-center gap-0.5">Unlock AI Coaching <ChevronRight size={10} /></button>}
+                  {!isPremium && <button onClick={() => setShowPaymentModal(true)} className="mt-1.5 text-[10px] text-sky-300 font-semibold hover:underline cursor-pointer flex items-center gap-0.5">Unlock AI Coaching <ChevronRight size={10} /></button>}
                 </div>
 
                 {/* Voice Coach Toggle */}
                 <div className="bg-white/5 border border-white/10 rounded-lg p-3">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${voiceCoach.isEnabled ? 'bg-[#ff7043]/10' : 'bg-white/10'}`}>
-                        {voiceCoach.isEnabled ? <Volume2 size={16} className="text-[#ff7043]" /> : <VolumeX size={16} className="text-gray-400" />}
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${voiceCoach.isEnabled ? 'bg-sky-300/70/10' : 'bg-white/10'}`}>
+                        {voiceCoach.isEnabled ? <Volume2 size={16} className="text-sky-300" /> : <VolumeX size={16} className="text-gray-400" />}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1">
                           <span className="text-xs font-bold text-white">Voice Coach</span>
-                          {!isPremium && <span className="flex items-center gap-0.5 text-[9px] font-bold text-[#ff7043] bg-[#ff7043]/10 px-1 py-0.5 rounded-full"><Lock size={7} /> PRO</span>}
+                          {!isPremium && <span className="flex items-center gap-0.5 text-[9px] font-bold text-sky-300 bg-sky-300/70/10 px-1 py-0.5 rounded-full"><Lock size={7} /> PRO</span>}
                         </div>
                         <span className="text-[10px] text-gray-500">{voiceCoach.isEnabled ? 'Active - range-based cues' : 'Tap to enable'}</span>
                       </div>
@@ -1249,7 +1392,7 @@ clearInterval(tipInterval);
                     <button
                       onClick={() => { if (!isPremium) { setShowPaymentModal(true); return; } voiceCoach.toggle(); }}
                       className={`relative w-11 h-6 rounded-full cursor-pointer transition-all`}
-                      style={{ backgroundColor: voiceCoach.isEnabled ? '#ff7043' : '#374151' }}>
+                      style={{ backgroundColor: voiceCoach.isEnabled ? '#4FD1FF' : '#374151' }}>
                       <div className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
                         style={{ left: voiceCoach.isEnabled ? '1.2rem' : '0.125rem' }} />
                     </button>
@@ -1267,10 +1410,13 @@ clearInterval(tipInterval);
                     </div>
                   )}
                 </div>
-
-                <button onClick={stopWorkout} className="w-full py-3.5 rounded-xl bg-red-500 text-white font-bold text-base cursor-pointer transition-all active:scale-[0.97] hover:bg-red-600 hover:shadow-lg flex items-center justify-center gap-2">
-                  <Square size={16} /> Stop Workout
-                </button>
+                <button
+  onClick={stopWorkout}
+  className="w-full py-3.5 rounded-2xl text-red-100 font-medium text-sm cursor-pointer transition-all border border-red-300/20 bg-red-500/10 hover:bg-red-500/15 hover:shadow-[0_0_18px_rgba(255,80,80,0.28)] backdrop-blur-md flex items-center justify-center gap-2"
+>
+  <Square size={16} />
+  Stop Workout
+</button>
               </>
             )}
           </div>
@@ -1281,19 +1427,19 @@ clearInterval(tipInterval);
           <div className="space-y-4 px-3 pt-3 pb-8">
             <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background:'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
               <div className="px-5 pt-5 pb-2 flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#ff7043]/20 flex items-center justify-center"><Utensils size={16} className="text-[#ff7043]" /></div>
+                <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Utensils size={16} className="text-sky-300" /></div>
                 <h2 className="text-sm font-bold text-white">Diet Plan Generator</h2>
               </div>
               <p className="text-xs text-gray-400 mb-3 px-5">Get a personalized diet plan based on your workout session.</p>
               {currentExercise && (
                 <div className="flex items-center gap-2 mb-4 mx-5 bg-white/5 rounded-xl p-3">
-                  <span className="text-[#ff7043]">{getCategoryIcon(currentExercise.category, 16)}</span>
+                  <span className="text-sky-300">{getCategoryIcon(currentExercise.category, 16)}</span>
                   <span className="text-sm font-medium text-gray-300">{currentExercise.name}</span>
                   <span className="text-xs text-gray-500">- {repCount} reps - {caloriesBurned} kcal burned</span>
                 </div>
               )}
               <div className="px-5 pb-5">
-                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#ff7043' }}>
+                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#217999' }}>
                   {dietLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating Plan...</> : <><Utensils size={16} /> Get Diet Plan</>}
                 </button>
               </div>
@@ -1307,16 +1453,16 @@ clearInterval(tipInterval);
 
             <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background:'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
               <div className="flex items-center gap-2 mb-3 px-5 pt-5">
-                <div className="w-8 h-8 rounded-lg bg-[#ff7043]/20 flex items-center justify-center"><Microscope size={16} className="text-[#ff7043]" /></div>
+                <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Microscope size={16} className="text-sky-300" /></div>
                 <h2 className="text-sm font-bold text-white">Analyze Your Diet</h2>
               </div>
               <p className="text-xs text-gray-400 mb-3 px-5">Enter your meals to get a detailed nutritional breakdown.</p>
               <div className="px-5">
                 <textarea value={mealInput} onChange={(e) => setMealInput(e.target.value)} placeholder="e.g., 2 roti, dal, rice, curd, 1 banana..."
-                  className="w-full p-3 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-gray-500 outline-none resize-none focus:border-[#ff7043] transition-colors" rows={3} />
+                  className="w-full p-3 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-gray-500 outline-none resize-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" rows={3} />
               </div>
               <div className="px-5 pb-5">
-                <button onClick={analyzeDiet} disabled={analyzeLoading||!mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#ff7043' }}>
+                <button onClick={analyzeDiet} disabled={analyzeLoading||!mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor:'#217999' }}>
                   {analyzeLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Microscope size={16} /> Analyze Diet</>}
                 </button>
               </div>
@@ -1331,15 +1477,15 @@ clearInterval(tipInterval);
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between text-xs mb-1"><span className="font-semibold text-gray-300">Protein Goal</span><span className="text-gray-500">{dietAnalysis.protein}g / {dietAnalysis.goalProtein}g</span></div>
-                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width:`${Math.min(100,(dietAnalysis.protein/dietAnalysis.goalProtein)*100)}%`, backgroundColor:dietAnalysis.protein>=dietAnalysis.goalProtein?'#22c55e':'#ff7043' }} /></div>
+                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width:`${Math.min(100,(dietAnalysis.protein/dietAnalysis.goalProtein)*100)}%`, backgroundColor:dietAnalysis.protein>=dietAnalysis.goalProtein?'#22c55e':'#4FD1FF' }} /></div>
                     </div>
                     <div>
                       <div className="flex justify-between text-xs mb-1"><span className="font-semibold text-gray-300">Calorie Goal</span><span className="text-gray-500">{dietAnalysis.calories} / {dietAnalysis.goalCalories} kcal</span></div>
-                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width:`${Math.min(100,(dietAnalysis.calories/dietAnalysis.goalCalories)*100)}%`, backgroundColor:dietAnalysis.calories>=dietAnalysis.goalCalories?'#22c55e':'#ff7043' }} /></div>
+                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width:`${Math.min(100,(dietAnalysis.calories/dietAnalysis.goalCalories)*100)}%`, backgroundColor:dietAnalysis.calories>=dietAnalysis.goalCalories?'#22c55e':'#4FD1FF' }} /></div>
                     </div>
                   </div>
                   <div className="bg-white/5 rounded-lg p-3 space-y-1.5">
-                    <p className="text-xs text-gray-300 flex items-start gap-1"><Sparkles size={12} className="text-[#ff7043] mt-0.5 shrink-0" />{dietAnalysis.suggestionEn}</p>
+                    <p className="text-xs text-gray-300 flex items-start gap-1"><Sparkles size={12} className="text-sky-300 mt-0.5 shrink-0" />{dietAnalysis.suggestionEn}</p>
                     <p className="text-xs text-gray-500 flex items-start gap-1"><ChevronRight size={12} className="text-gray-400 mt-0.5 shrink-0" />{dietAnalysis.suggestionHi}</p>
                   </div>
                 </div>
@@ -1354,7 +1500,7 @@ clearInterval(tipInterval);
 
       {toast && (
         <div className="fixed left-1/2 -translate-x-1/2 z-50 animate-bounce" style={{ bottom:'2rem' }}>
-          <div className="px-4 py-2.5 rounded-xl text-white font-semibold text-xs shadow-xl flex items-center gap-1.5" style={{ backgroundColor:'#ff7043' }}>
+          <div className="px-4 py-2.5 rounded-xl text-white font-semibold text-xs shadow-xl flex items-center gap-1.5" style={{ backgroundColor:'#4FD1FF' }}>
             <Sparkles size={12} /> {toast}
           </div>
         </div>

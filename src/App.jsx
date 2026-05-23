@@ -11,9 +11,6 @@ function App() {
       <BrowserRouter>
 
         <PrivacyPopup />
-        <h1 style={{color:"white", position:"fixed", zIndex:999999}}>
-TEST TEXT
-</h1>
 
         <Routes>
           <Route path="/login" element={<Login />} />
