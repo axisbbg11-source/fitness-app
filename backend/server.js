@@ -18,17 +18,22 @@ app.set('trust proxy', 1);
 app.use(helmet());
 
 // Restrict CORS to the configured origin in production. Allows no-origin requests (curl/local) too.
-const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://reelbosster.example';
+const allowedOrigins = [
+  process.env.ALLOWED_ORIGIN,
+  'https://www.fitcoach.com',   // your production domain
+  'http://localhost:3000',
+  'http://localhost:5173',
+].filter(Boolean);
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || origin === allowedOrigin) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('CORS not allowed'));
     }
   },
 }));
-
 app.use(express.json());
 
 // Redirect HTTP to HTTPS when running in production behind a proxy
