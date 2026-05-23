@@ -157,9 +157,9 @@ Format:
 
     } catch (aiError) {
 
-      console.log(
-        'AI failed. Using local parser.'
-      );
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('AI failed. Using local parser.');
+      }
 
       // ─────────────────────────
       // LOCAL FALLBACK
@@ -358,8 +358,7 @@ app.post('/api/check-premium', (req, res) => {
 // ─────────────────────────────────────────────
 
 app.listen(PORT, () => {
-
-  console.log(
-    `Server running on port ${PORT}`
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Server running on port ${PORT}`);
+  }
 });

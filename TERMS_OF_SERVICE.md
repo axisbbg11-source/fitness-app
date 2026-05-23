@@ -50,4 +50,4 @@ We may update these Terms. Continued use after a change constitutes acceptance o
 
 11. Contact
 
-For questions about these Terms, contact: support@yourdomain.example (replace with your contact email).
+For questions about these Terms, contact: support@reelbosster.com (replace with your contact email).

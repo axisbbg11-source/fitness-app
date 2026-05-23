@@ -41,10 +41,9 @@ export async function callAI(prompt) {
 
   const data = await response.json();
 
-  console.log(
-    'OPENROUTER RESPONSE:',
-    JSON.stringify(data)
-  );
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('OPENROUTER RESPONSE:', JSON.stringify(data));
+  }
 
   if (!response.ok) {
 
