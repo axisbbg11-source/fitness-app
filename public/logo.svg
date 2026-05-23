@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FitCoach logo">
+  <rect width="512" height="512" rx="28" fill="#070617" />
+  <!-- angled dumbbell stroke to match user image -->
+  <g transform="translate(256 256)">
+    <g transform="rotate(-28)">
+      <path d="M-120 -8 C-100 -8 -92 -24 -72 -24" stroke="#78E6FF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.98" />
+      <path d="M120 8 C100 8 92 24 72 24" stroke="#78E6FF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.98" />
+
+      <!-- main curved bar -->
+      <path d="M-92 -20 L-40 -20 L-4 -44 L4 -44 L40 -20 L92 -20" stroke="#78E6FF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+      <!-- left plates -->
+      <g transform="translate(-150 6)">
+        <rect x="-6" y="-28" width="34" height="56" rx="8" fill="#78E6FF" opacity="0.07"/>
+        <path d="M-6 -28 h34" stroke="#78E6FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M-6 28 h34" stroke="#78E6FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- right plates -->
+      <g transform="translate(116 6)">
+        <rect x="-6" y="-28" width="34" height="56" rx="8" fill="#78E6FF" opacity="0.07"/>
+        <path d="M-6 -28 h34" stroke="#78E6FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M-6 28 h34" stroke="#78E6FF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+
+      <!-- outer stroke that matches rounded single-line look -->
+      <path d="M-168 0 C-150 -28 -120 -46 -80 -46 L-24 -46 C-8 -46 8 -46 24 -46 L80 -46 C120 -46 150 -28 168 0" stroke="#78E6FF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.95"/>
+
+    </g>
+  </g>
+</svg>

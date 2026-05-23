@@ -24,6 +24,7 @@ export default function useVoiceCoach({ isPremium }) {
   const prevRepCountRef       = useRef(0);
   const voicesLoadedRef       = useRef(false);
   const preferredVoiceRef     = useRef(null);
+  const voicesChangedHandlerRef = useRef(null);
 
   const REQUIRED_FRAMES   = 4;
   const HIGH_MIN_INTERVAL = 700;
@@ -98,9 +99,17 @@ export default function useVoiceCoach({ isPremium }) {
         if ((window.speechSynthesis?.getVoices() || []).length > 0) {
           trySpeak();
         } else if (window.speechSynthesis) {
-          window.speechSynthesis.onvoiceschanged = trySpeak;
+          voicesChangedHandlerRef.current = trySpeak;
+          try {
+            window.speechSynthesis.addEventListener('voiceschanged', trySpeak);
+          } catch (e) {
+            // fallback to assignment if addEventListener not supported
+            try { window.speechSynthesis.onvoiceschanged = trySpeak; } catch (e) {}
+          }
         }
       } else {
+        try { if (voicesChangedHandlerRef.current && window.speechSynthesis) window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandlerRef.current); } catch (e) {}
+        voicesChangedHandlerRef.current = null;
         window.speechSynthesis?.cancel();
       }
       return next;

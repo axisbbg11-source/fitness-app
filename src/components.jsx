@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 export default function SimpleBubbleBackground() {
   const canvasRef = useRef(null);
   const bubblesRef = useRef([]);
+  const rafRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -45,12 +46,14 @@ export default function SimpleBubbleBackground() {
         ctx.fill();
       }
 
-      requestAnimationFrame(animate);
+      rafRef.current = requestAnimationFrame(animate);
     };
     animate();
 
     return () => {
       window.removeEventListener('resize', resize);
+      try { if (rafRef.current) cancelAnimationFrame(rafRef.current); } catch (e) {}
+      rafRef.current = null;
     };
   }, []);
 

@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 import { parseNutritionLocally } from './parser.js';
 import { callAI } from './openrouter.js';
@@ -9,9 +13,33 @@ const app = express();
 
 const premiumUsers = new Set();
 
-app.use(cors());
+app.set('trust proxy', 1);
+
+app.use(helmet());
+
+// Restrict CORS to the configured origin in production. Allows no-origin requests (curl/local) too.
+const allowedOrigin = process.env.ALLOWED_ORIGIN || 'https://reelbosster.example';
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || origin === allowedOrigin) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+}));
 
 app.use(express.json());
+
+// Redirect HTTP to HTTPS when running in production behind a proxy
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (!req.secure && req.get('x-forwarded-proto') !== 'https') {
+      return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
 
 // ─────────────────────────────────────────────
 // RATE LIMITERS

@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth } from './firebase';
+
+const db = getFirestore();
 
 export default function PrivacyPopup() {
   const [accepted, setAccepted] = useState(false);
@@ -11,9 +15,21 @@ export default function PrivacyPopup() {
     }
   }, []);
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     localStorage.setItem("privacyAccepted", "true");
     setAccepted(true);
+
+    try {
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        await setDoc(doc(db, 'users', uid), {
+          privacyAccepted: true,
+          privacyAcceptedAt: serverTimestamp(),
+        }, { merge: true });
+      }
+    } catch (err) {
+      console.error('Failed to persist privacy acceptance:', err);
+    }
   };
 
   if (accepted) return null;

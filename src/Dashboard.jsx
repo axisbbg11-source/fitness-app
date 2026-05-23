@@ -44,10 +44,12 @@ import exercises, { categories } from './data/exercises';
 import ParticleBackground from './components';
 import { createRepDetector } from './repDetection.js';
 import { useAuth } from './AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Navigate } from 'react-router-dom';
 import useVoiceCoach from './useVoiceCoach';
+import PrivacyPopup from './PrivacyPopup';
 import { getPoseInstance, loadCameraUtils } from './poseLoader';
 // ==================== LOADING TIPS ====================
+
 const LOADING_TIPS = [
   { icon: Flame, text: 'Tip: Stay hydrated during your workout!' },
   { icon: Activity, text: 'Tip: Focus on form over speed for better results.' },
@@ -518,7 +520,19 @@ boxShadow: isYearly
 
 // ==================== MAIN DASHBOARD ====================
 export default function Dashboard() {
-  const { logout: firebaseLogout, user: firebaseUser } = useAuth();
+  const { user, loading, logout } = useAuth();
+
+if (loading) {
+  return (
+    <div className="h-screen flex items-center justify-center text-white">
+      Loading...
+    </div>
+  );
+}
+
+if (!user) {
+  return <Navigate to="/login" replace />;
+}
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('workout');
   const [selectedCategory, setSelectedCategory] = useState('Home');
@@ -576,6 +590,7 @@ export default function Dashboard() {
   const isWorkingOutRef   = useRef(false);
   const currentExerciseRef= useRef(null);
   const animationFrameRef = useRef(null);
+  const tipIntervalRef    = useRef(null);
   const lastUIUpdateRef   = useRef(0);
   const feedbackThrottleRef = useRef(0);
   // ── NEW: forgiving rep detector instance ──────────────────
@@ -606,12 +621,12 @@ export default function Dashboard() {
       const weekly = loadWeeklyProgress();
       setDailyTargets(targets); setDailyProgress(progress); setStreak(streakData); setWeeklyData(weekly);
       setEditCalTarget(String(targets.calories)); setEditMinTarget(String(targets.workoutMin)); setEditRepTarget(String(targets.reps));
-      if (firebaseUser?.uid) {
+      if (user?.uid) {
         try {
           const res = await fetch(`${BACKEND_URL}/api/check-premium`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: firebaseUser.uid }),
+            body: JSON.stringify({ uid: user.uid }),
           });
           const data = await res.json();
           if (data.isPremium) setIsPremium(true);
@@ -622,7 +637,7 @@ export default function Dashboard() {
       }
     };
     init();
-  }, [firebaseUser]);
+  }, [user]);
 
   const saveTargetEdits = useCallback(() => {
     const newTargets = { calories: parseInt(editCalTarget)||300, workoutMin: parseInt(editMinTarget)||30, reps: parseInt(editRepTarget)||50 };
@@ -866,9 +881,22 @@ const onResults = useCallback((results) => {
     cameraInstanceRef.current = null;
   }
 
+  // Clear workout intervals
+  try { if (timerIntervalRef.current) { clearInterval(timerIntervalRef.current); } } catch (e) {}
+  timerIntervalRef.current = null;
+  try { if (tipIntervalRef.current) { clearInterval(tipIntervalRef.current); } } catch (e) {}
+  tipIntervalRef.current = null;
+
   console.log("Workout stopped");
 
 }, []);
+
+  // Cleanup on unmount — ensure all timers and streams are stopped
+  useEffect(() => {
+    return () => {
+      try { stopWorkout(); } catch (e) {}
+    };
+  }, [stopWorkout]);
 
   const startWorkout = useCallback(async (exerciseParam) => {
     const exercise = exerciseParam || currentExerciseRef.current;
@@ -902,7 +930,7 @@ if (savedCalibration) {
     setIsWorkingOut(true);
     voiceCoachOnStart();
 
-    const tipInterval = setInterval(() => setLoadingTip(prev => (prev+1) % LOADING_TIPS.length), 3000);
+    tipIntervalRef.current = setInterval(() => setLoadingTip(prev => (prev+1) % LOADING_TIPS.length), 3000);
 
     try {
       setLoadingStep(2); loadingStepRef.current = 2;
@@ -927,14 +955,15 @@ await new Promise(resolve => setTimeout(resolve, 300));
 
 const videoEl = videoRef.current;
 
-if (!videoEl) {
+  if (!videoEl) {
   setCameraError('Camera element not available.');
   isWorkingOutRef.current = false;
   setIsWorkingOut(false);
   setModelLoading(false);
   modelLoadingRef.current = false;
   setLoadingStep(0);
-  clearInterval(tipInterval);
+  try { clearInterval(tipIntervalRef.current); } catch (e) {}
+  tipIntervalRef.current = null;
   return;
 }
 
@@ -956,8 +985,11 @@ try {
         }
 
         await videoEl.play();
+        // remove handler to avoid retained references
+        try { videoEl.onloadedmetadata = null; } catch (e) {}
         resolve();
       } catch (err) {
+        try { videoEl.onloadedmetadata = null; } catch (e) {}
         reject(err);
       }
     };
@@ -981,7 +1013,8 @@ try {
 
   setLoadingStep(0);
 
-  clearInterval(tipInterval);
+  try { clearInterval(tipIntervalRef.current); } catch (e) {}
+  tipIntervalRef.current = null;
 
   return;
 }
@@ -1030,7 +1063,8 @@ setLoadingStep(4);
 
 setTimeout(() => setLoadingStep(0), 800);
 
-clearInterval(tipInterval);
+  try { clearInterval(tipIntervalRef.current); } catch (e) {}
+  tipIntervalRef.current = null;
 
 } catch (err) {
   console.error('Workout start failed:', err);
@@ -1049,7 +1083,8 @@ clearInterval(tipInterval);
 
   setLoadingStep(0);
 
-  clearInterval(tipInterval);
+  try { clearInterval(tipIntervalRef.current); } catch (e) {}
+  tipIntervalRef.current = null;
 }
 
 }, [voiceCoachOnStart]);
@@ -1127,6 +1162,7 @@ clearInterval(tipInterval);
   return (
     <div className="min-h-screen relative" style={{ background: 'linear-gradient(180deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%)' }}>
       <ParticleBackground />
+      <PrivacyPopup />
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40"
@@ -1134,7 +1170,7 @@ clearInterval(tipInterval);
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Dumbbell size={18} className="text-sky-300" /></div>
-            <h1 className="text-lg font-extrabold tracking-tight" style={{ color:'#4FD1FF', fontFamily:'Syne, DM Sans, sans-serif' }}>FitCoach AI</h1>
+            <h1 className="text-lg font-extrabold tracking-tight" style={{ background: 'linear-gradient(90deg, #4FD1FF, #ff9a76)', WebkitBackgroundClip: 'text', color:'transparent', fontFamily:'Syne, DM Sans, sans-serif' }}>FitCoach AI</h1>
             {isPremium && <span className="text-[9px] font-bold bg-yellow-400/20 text-yellow-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Crown size={8} /> PRO</span>}
           </div>
           <div className="flex items-center gap-2">
@@ -1146,13 +1182,13 @@ clearInterval(tipInterval);
             <button onClick={async () => {
               isWorkingOutRef.current = false;
               if (cameraInstanceRef.current) cameraInstanceRef.current.stop();
-              try { await firebaseLogout(); } catch(e) {}
+              try { await logout(); } catch(e) {}
               navigate('/login');
             }} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold text-white/60 hover:text-red-400 bg-white/5 border border-white/10 hover:border-red-500/30 cursor-pointer transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
               Logout
             </button>
-            {firebaseUser?.photoURL && <img src={firebaseUser.photoURL} alt="" className="w-7 h-7 rounded-full border border-white/10" />}
+            {user?.photoURL && <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full border border-white/10" />}
           </div>
         </div>
         <div className="px-4 pb-2">

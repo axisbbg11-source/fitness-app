@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import ParticleBackground from './components';
-import { sendPasswordResetEmail } from "firebase/auth";
+import Logo from './Logo';
+import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "./firebase";
-
 
 export default function Login() {
   const nav = useNavigate();
@@ -37,21 +37,57 @@ export default function Login() {
     }
   }, [firebaseUser, nav]);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setErr('');
-    if (!email.trim()) { setErr('Please enter your email'); return; }
-    if (!pass.trim()) { setErr('Please enter your password'); return; }
-    setLoading(true);
-    setTimeout(() => {
-      localStorage.setItem('fitcoach_logged_in', 'true');
-      localStorage.setItem('user', JSON.stringify({ name: email.split('@')[0], email }));
-      localStorage.setItem('token', 'demo-token');
-      setLoading(false);
-      nav('/dashboard');
-    }, 1200);
-  };
+  const handleLogin = async (e) => {
+  e.preventDefault();
+  setErr('');
 
+  if (!email.trim()) {
+    setErr('Please enter your email');
+    return;
+  }
+
+  if (!pass.trim()) {
+    setErr('Please enter your password');
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await signInWithEmailAndPassword(auth, email, pass);
+
+    nav('/dashboard');
+
+  } catch (error) {
+
+    switch (error.code) {
+
+      case 'auth/user-not-found':
+        setErr('No account found with this email.');
+        break;
+
+      case 'auth/wrong-password':
+        setErr('Incorrect password.');
+        break;
+
+      case 'auth/invalid-email':
+        setErr('Invalid email address.');
+        break;
+
+      case 'auth/invalid-credential':
+        setErr('Invalid email or password.');
+        break;
+
+      default:
+        setErr(error.message);
+    }
+
+    console.error(error);
+
+  } finally {
+    setLoading(false);
+  }
+};
   // ─── REAL Firebase Google Sign-In ───
   const handleGoogle = async () => {
     setErr('');
@@ -99,7 +135,26 @@ const handleForgotPassword = async (e) => {
     if (!signEmail.trim()) { setErr('Please enter your email'); return; }
     if (signPass.length < 6) { setErr('Password must be at least 6 characters'); return; }
     setSignLoading(true);
-    handleGoogle();
+    (async () => {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, signEmail, signPass);
+        if (cred?.user) {
+          try { await updateProfile(cred.user, { displayName: signName }); } catch (e) { console.warn('updateProfile failed', e); }
+          // onAuthStateChanged in AuthContext will pick up the new user and store it
+          nav('/dashboard');
+        }
+      } catch (error) {
+        console.error('Sign up error', error);
+        switch (error.code) {
+          case 'auth/email-already-in-use': setErr('An account with this email already exists — please sign in or use Google sign-in.'); break;
+          case 'auth/invalid-email': setErr('Invalid email address.'); break;
+          case 'auth/weak-password': setErr('Password is too weak.'); break;
+          default: setErr(error.message || 'Sign up failed.');
+        }
+      } finally {
+        setSignLoading(false);
+      }
+    })();
   };
 
   const goBack = () => {
@@ -128,22 +183,7 @@ const handleForgotPassword = async (e) => {
 
   const inp = "w-full pl-11 pr-4 py-3.5 rounded-xl text-white text-sm outline-none transition-all duration-300 bg-white/[0.04] border border-white/[0.07] placeholder-gray-600 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10/40 focus:bg-white/[0.06] focus:shadow-[0_0_16px_rgba(79,209,255,0.06)]";
 
-  const Logo = () => (
-    <div className="flex justify-center mb-5">
-      <div className="relative">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <rect x="1" y="7" width="5" height="10" rx="1.5" fill="#4FD1FF" />
-            <rect x="18" y="7" width="5" height="10" rx="1.5" fill="#4FD1FF" />
-            <rect x="5" y="11" width="14" height="2" rx="1" fill="rgba(255,255,255,0.65)" />
-            <rect x="3" y="9" width="2" height="6" rx="0.5" fill="rgba(79,209,255,0.5)" />
-            <rect x="19" y="9" width="2" height="6" rx="0.5" fill="rgba(79,209,255,0.5)" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
+  
 
   const Spinner = () => (
     <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -1,0 +1,16 @@
+{
+  "name": "FitCoach AI",
+  "short_name": "FitCoach",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070617",
+  "theme_color": "#070617",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

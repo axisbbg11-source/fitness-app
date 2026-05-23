@@ -24,6 +24,28 @@ src/
     └── exercises.js     # Exercise definitions
 ```
 
+## Logo & Assets
+
+- **App logo:** placed at `public/logo.svg` and `src/assets/logo.svg`.
+- The app uses `logo.svg` as the favicon and PWA icon via `index.html` and `public/manifest.webmanifest`.
+- To update the logo, replace both SVGs (or update `public/logo.svg`) and rebuild.
+
+## Recommended Project Organization
+
+Keep runtime assets in `public/` and source/importable assets in `src/assets/`.
+
+Example:
+
+```
+public/
+├── logo.svg
+├── manifest.webmanifest
+src/
+├── assets/
+│   └── logo.svg
+└── ...
+```
+
 ## Setup
 ```bash
 npm install
