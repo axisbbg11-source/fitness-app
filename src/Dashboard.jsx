@@ -816,7 +816,7 @@ export default function Dashboard() {
     voiceCoachOnAngle(smoothed, currentExercise, repCountRef.current);
 
     // ── Count rep ──
-    if (counted && formConfidence > 0.65) {
+       if (!currentExercise.isHold && counted && formConfidence > 0.65) {
       const newCount = repCountRef.current + 1;
       repCountRef.current = newCount;
       setRepCount(newCount);
@@ -1356,11 +1356,11 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3">
+               {/* Stats */}
+              <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
-                    <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-0.5"><RotateCcw size={9} /> Reps</div>
-                    <div className="text-2xl font-extrabold text-sky-300">{repCount}</div>
+                    <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-0.5"><RotateCcw size={9} /> {currentExercise?.isHold ? 'Hold' : 'Reps'}</div>
+                    <div className="text-2xl font-extrabold text-sky-300">{currentExercise?.isHold ? timer : repCount}</div>
                   </div>
                   <div className="bg-white/5 border border-white/10 rounded-lg p-3 text-center">
                     <div className="flex items-center justify-center gap-1 text-[10px] text-gray-400 mb-0.5"><Timer size={9} /> Time</div>
