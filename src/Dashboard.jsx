@@ -46,7 +46,7 @@ import { createRepDetector } from './repDetection.js';
 import { useAuth } from './AuthContext';
 import { useNavigate, Navigate } from 'react-router-dom';
 import useVoiceCoach from './useVoiceCoach';
-import { getPoseInstance, loadCameraUtils } from './poseLoader';
+import { getPoseInstance, loadCameraUtils , preloadPose} from './poseLoader';
 // ==================== LOADING TIPS ====================
 
 const LOADING_TIPS = [
@@ -626,6 +626,7 @@ export default function Dashboard() {
           if (localPremium === 'true') setIsPremium(true);
         }
       }
+        preloadPose();
     };
     init();
   }, [user]);
