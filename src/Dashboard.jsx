@@ -1286,7 +1286,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-3">
                   {filteredExercises.map((ex) => (
                     <button key={ex.id} onClick={() => handleExerciseClick(ex)}
-                      className={`relative p-3 rounded-xl text-left cursor-pointer transition-all active:scale-[0.97] ${ex.premium && !isPremium ? 'opacity-80' : ''} bg-white/5 border border-white/10 hover:border-[#4FD1FF]/50 hover:bg-white/10`}>
+                      className={`relative z-10 p-3 rounded-xl text-left cursor-pointer transition-all active:scale-[0.97] ${ex.premium && !isPremium ? 'opacity-80' : ''} bg-white/5 border border-white/10 hover:border-[#4FD1FF]/50 hover:bg-white/10`}>
                       {ex.premium && !isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Lock size={10} className="text-gray-400" /><span className="text-[10px] font-bold text-sky-300 bg-sky-300/70/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
                       {ex.premium && isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Crown size={10} className="text-yellow-400" /><span className="text-[10px] font-bold text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
                       <div className="mb-0.5 text-sky-300">{getCategoryIcon(ex.category, 18)}</div>
