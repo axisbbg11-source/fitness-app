@@ -30,5 +30,33 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+      <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js');
+
+      console.log('SW registered:', reg);
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+
+        newWorker?.addEventListener('statechange', () => {
+          if (
+            newWorker.state === 'installed' &&
+            navigator.serviceWorker.controller
+          ) {
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+
+            window.location.reload();
+          }
+        });
+      });
+    } catch (err) {
+      console.error('SW failed:', err);
+    }
+  });
+}
+</script>
   </body>
 </html>
