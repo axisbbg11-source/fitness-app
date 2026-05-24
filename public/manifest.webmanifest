@@ -2,7 +2,7 @@
   "name": "FitCoach",
   "short_name": "FitCoach",
 
-  "start_url": "/app",
+  "start_url": "/",
   "scope": "/",
 
   "display": "standalone",
@@ -10,24 +10,15 @@
 
   "theme_color": "#070617",
   "background_color": "#070617",
-
-  "shortcuts": [
-    {
-      "name": "Start Workout",
-      "short_name": "Workout",
-      "url": "/app"
-    }
-  ],
-
   "icons": [
     {
-      "src": "/Logo192.png?v=20260524",
+      "src": "/Logo192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/Logo512.png?v=20260524",
+      "src": "/Logo512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
