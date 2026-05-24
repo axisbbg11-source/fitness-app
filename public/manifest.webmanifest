@@ -1,15 +1,12 @@
 {
   "name": "FitCoach",
   "short_name": "FitCoach",
-
   "start_url": "/",
-  "scope": "/",
-
   "display": "standalone",
-  "orientation": "portrait",
-
   "theme_color": "#070617",
   "background_color": "#070617",
+  "description": "AI Powered Fitness Coach with real-time rep counting",
+  "id": "/",
   "icons": [
     {
       "src": "/Logo192.png",
@@ -22,6 +19,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }

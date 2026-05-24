@@ -11,8 +11,17 @@ import { auth, googleProvider } from './firebase';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+ const [user, setUser] = useState(() => {
+  try {
+    const cached = localStorage.getItem('fitcoach-user');
+    return cached ? JSON.parse(cached) : null;
+  } catch {
+    return null;
+  }
+});
+const [loading, setLoading] = useState(() => {
+  return !localStorage.getItem('fitcoach-user');
+});
 
   // AUTH STATE LISTENER
   useEffect(() => {

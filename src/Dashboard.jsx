@@ -591,11 +591,10 @@ export default function Dashboard() {
   const voiceCoachOnAngle = voiceCoach.onAngle;
   const voiceCoachOnStart = voiceCoach.onStart;
   const voiceCoachOnComplete = voiceCoach.onComplete;
-  if (loading) return <div className="h-screen flex items-center justify-center text-white">Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
   // Keep currentExerciseRef in sync
   useEffect(() => { currentExerciseRef.current = currentExercise; }, [currentExercise]);
-
+   if (loading) return <div className="h-screen flex items-center justify-center text-white">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
   const filteredExercises = exercises.filter((ex) => {
     const catMatch = ex.category === selectedCategory;
     const diffMatch = difficultyFilter === 'All' || ex.difficulty === difficultyFilter.toLowerCase();
