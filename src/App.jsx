@@ -4,11 +4,14 @@ import PrivacyPopup from "./PrivacyPopup";
 import ProtectedRoute from './ProtectedRoute';
 import Login from './Login';
 import Dashboard from './Dashboard';
+import InstallPrompt from './InstallPrompt';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+
+        <InstallPrompt />
 
         <PrivacyPopup />
 
