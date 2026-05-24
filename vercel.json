@@ -1,8 +1,12 @@
-{  
+{
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/mediapipe-pose/(.*)",
+      "destination": "/mediapipe-pose/$1"
+    },
+    {
+      "source": "/((?!mediapipe-pose).*)",
+      "destination": "/index.html"
     }
   ]
 }
