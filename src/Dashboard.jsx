@@ -1154,7 +1154,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Dumbbell size={18} className="text-sky-300" /></div>
-            <h1 className="text-lg font-extrabold tracking-tight" style={{ background: 'linear-gradient(90deg, #4FD1FF, #ff9a76)', WebkitBackgroundClip: 'text', color: 'transparent', fontFamily: 'Syne, DM Sans, sans-serif' }}>FitCoach AI</h1>
+            <h1 className="text-lg font-extrabold tracking-tight" style={{ background: 'linear-gradient(90deg, #4FD1FF, #ff9a76)', WebkitBackgroundClip: 'text', color: 'transparent', fontFamily: 'Syne, DM Sans, sans-serif' }}>FitCoach </h1> 
             {isPremium && <span className="text-[9px] font-bold bg-yellow-400/20 text-yellow-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Crown size={8} /> PRO</span>}
           </div>
           <div className="flex items-center gap-2">

@@ -7,37 +7,60 @@ export default function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center gap-4"
         style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
           background: 'linear-gradient(180deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%)',
+          gap: '20px',
         }}
       >
-        <div className="relative w-14 h-14">
-          <div
-            className="absolute inset-0 rounded-full animate-ping"
-            style={{ backgroundColor: 'rgba(79,209,255,0.15)', animationDuration: '1.5s' }}
-          />
-          <div
-            className="absolute inset-2 rounded-full animate-pulse"
-            style={{ backgroundColor: 'rgba(79,209,255,0.25)' }}
-          />
-          <div
-            className="absolute inset-3 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: '#0a0a1a' }}
-          >
-            <span className="text-lg">💪</span>
-          </div>
+        {/* ROTATING RINGS */}
+        <div style={{ position: 'relative', width: '80px', height: '80px' }}>
+
+          {/* Outer spinning ring */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            borderRadius: '50%',
+            border: '3px solid transparent',
+            borderTopColor: '#4FD1FF',
+            borderRightColor: '#ff9a76',
+            animation: 'spin 1s linear infinite',
+          }} />
+
+          {/* Inner spinning ring (opposite direction) */}
+          <div style={{
+            position: 'absolute', inset: '10px',
+            borderRadius: '50%',
+            border: '2px solid transparent',
+            borderTopColor: '#ff9a76',
+            borderLeftColor: '#4FD1FF',
+            animation: 'spin 1.5s linear infinite reverse',
+          }} />
+
         </div>
-        <p
-          className="text-sm font-semibold tracking-wide"
-          style={{
-            background: 'linear-gradient(90deg, #4FD1FF, #ff9a76)',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-          }}
-        >
-          FitCoach AI
+
+        {/* App name */}
+        <p style={{
+          background: 'linear-gradient(90deg, #4FD1FF, #ff9a76)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontWeight: 800,
+          fontSize: '1.1rem',
+          letterSpacing: '0.5px',
+          fontFamily: 'system-ui, sans-serif',
+        }}>
+          FitCoach
         </p>
+
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
