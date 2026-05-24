@@ -1,4 +1,4 @@
-const CACHE = 'fitcoach-v3'; // bump version to force fresh install
+const CACHE = 'fitcoach-v4'; // bump version to force fresh install
 const STATIC = [
   '/',
   '/index.html',
@@ -33,7 +33,8 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c =>
       Promise.allSettled(STATIC.map(u => c.add(u).catch(() => {})))
-    ).then(() => self.skipWaiting())
+    )
+   
   );
 });
 

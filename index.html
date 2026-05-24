@@ -46,9 +46,9 @@ if ('serviceWorker' in navigator) {
             newWorker.state === 'installed' &&
             navigator.serviceWorker.controller
           ) {
-            newWorker.postMessage({ type: 'SKIP_WAITING' });
+      newWorker.postMessage({ type: 'SKIP_WAITING' });
 
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 3000);
           }
         });
       });
