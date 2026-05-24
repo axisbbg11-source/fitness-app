@@ -35,7 +35,7 @@ export const getPoseInstance = async () => {
     if (!Pose) throw new Error('MediaPipe Pose failed to load.');
 
     poseInstance = new Pose({
-     locateFile: (file) => `/mediapipe-pose/${file}`
+     locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
     });
     poseInstance.setOptions({
       modelComplexity: 0,
