@@ -41,11 +41,11 @@ import {
   BarChart3,
 } from 'lucide-react';
 import exercises, { categories } from './data/exercises';
-import ParticleBackground from './components';
 import { createRepDetector } from './repDetection.js';
 import { useAuth } from './AuthContext';
 import { useNavigate, Navigate } from 'react-router-dom';
 import useVoiceCoach from './useVoiceCoach';
+import ProfileModal from './ProfileModal';
 import { getPoseInstance, loadCameraUtils , preloadPose} from './poseLoader';
 // ==================== LOADING TIPS ====================
 
@@ -554,6 +554,16 @@ export default function Dashboard() {
   const [editCalTarget, setEditCalTarget] = useState('300');
   const [editMinTarget, setEditMinTarget] = useState('30');
   const [editRepTarget, setEditRepTarget] = useState('50');
+  const [showProfile, setShowProfile] = useState(false);
+const [isDark, setIsDark] = useState(() => {
+  return localStorage.getItem('fitcoach-theme') !== 'light';
+});
+useEffect(() => {
+  document.body.style.background = isDark
+    ? 'linear-gradient(180deg,#0a0a1a 0%,#1a1a2e 50%,#16213e 100%)'
+    : 'linear-gradient(180deg,#f8faff 0%,#eef2ff 60%,#e0e7ff 100%)';
+  localStorage.setItem('fitcoach-theme', isDark ? 'dark' : 'light');
+}, [isDark]);
 
   // ── Refs ──────────────────────────────────────────────────
   const videoRef = useRef(null);
@@ -1145,21 +1155,27 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen relative" style={{ background: 'linear-gradient(180deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%)' }}>
-      <ParticleBackground />
+    <div className="min-h-screen relative" style={{ background: isDark ? 'linear-gradient(180deg, #0f1629 0%, #1a2540 50%, #1e2d4a 100%)' : 'linear-gradient(180deg, #f8faff 0%, #eef2ff 60%, #e0e7ff 100%)' }}>
 
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40"
-        style={{ background: 'rgba(10,10,30,0.97)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 16px rgba(0,0,0,0.4)', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        style={{ background: isDark ? 'rgba(15,22,41,0.97)' : 'rgba(248,250,255,0.97)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.08)', boxShadow: '0 2px 16px rgba(0,0,0,0.4)', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Dumbbell size={18} className="text-sky-300" /></div>
-            <h1 className="text-lg font-extrabold tracking-tight" style={{ background: 'linear-gradient(90deg, #4FD1FF, #ff9a76)', WebkitBackgroundClip: 'text', color: 'transparent', fontFamily: 'Syne, DM Sans, sans-serif' }}>FitCoach </h1> 
+           <h1 className="text-lg font-extrabold tracking-tight" style={{ 
+  color: isDark ? 'transparent' : '#1e1b4b',
+  background: isDark ? 'linear-gradient(90deg, #ffffff, #94a3b8)' : 'none',
+  WebkitBackgroundClip: isDark ? 'text' : 'unset',
+  WebkitTextFillColor: isDark ? 'transparent' : '#1e1b4b',
+  fontFamily: 'Inter, sans-serif', 
+  letterSpacing: '-0.02em' 
+}}>FitCoach</h1>
             {isPremium && <span className="text-[9px] font-bold bg-yellow-400/20 text-yellow-300 px-1.5 py-0.5 rounded-full flex items-center gap-0.5"><Crown size={8} /> PRO</span>}
           </div>
           <div className="flex items-center gap-2">
             {!isPremium && (
-              <button onClick={() => setShowPaymentModal(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold text-white cursor-pointer transition-all hover:shadow-[0_4px_12px_rgba(79,209,255,0.3)]" style={{ backgroundColor: '#2f86a5' }}>
+              <button onClick={() => setShowPaymentModal(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold text-white cursor-pointer transition-all hover:shadow-[0_4px_12px_rgba(79,209,255,0.3)]" style={{ background: 'linear-gradient(135deg, #7090c4, #4a4cb5)' }}>
                 <Crown size={11} /> Pro
               </button>
             )}
@@ -1168,11 +1184,20 @@ export default function Dashboard() {
               if (cameraInstanceRef.current) cameraInstanceRef.current.stop();
               try { await logout(); } catch (e) { }
               navigate('/login');
-            }} className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold text-white/60 hover:text-red-400 bg-white/5 border border-white/10 hover:border-red-500/30 cursor-pointer transition-all">
+            }} className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold cursor-pointer transition-all hover:text-red-400 hover:border-red-500/30 ${isDark ? 'text-white/60 bg-white/5 border border-white/10' : 'text-gray-600 bg-black/5 border border-black/10'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
               Logout
             </button>
-            {user?.photoURL && <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full border border-white/10" />}
+            <button
+  onClick={() => setShowProfile(true)}
+  className="w-8 h-8 rounded-full overflow-hidden border-2 border-sky-400/50 hover:border-sky-300 transition-all cursor-pointer flex items-center justify-center"
+  style={{ background: 'rgba(79,209,255,0.15)' }}
+>
+  {user?.photoURL
+    ? <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+    : <User size={14} className="text-sky-300" />
+  }
+</button>
           </div>
         </div>
         <div className="px-4 pb-2">
@@ -1180,7 +1205,7 @@ export default function Dashboard() {
             {[{ key: 'workout', label: 'Workout', icon: Dumbbell }, { key: 'diet', label: 'Diet', icon: Utensils }].map((tab) => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all duration-300 ${activeTab === tab.key ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                style={activeTab === tab.key ? { background: 'linear-gradient(135deg, #4FD1FF, #ff9a76)', boxShadow: '0 2px 12px rgba(79,209,255,0.35)' } : {}}>
+                style={activeTab === tab.key ? { background: 'linear-gradient(135deg, #91a8cf, #4e50b9)', boxShadow: '0 2px 12px rgba(59,130,246,0.3)' } : {}}>
                 <tab.icon size={16} /> {tab.label}
               </button>
             ))}
@@ -1196,11 +1221,11 @@ export default function Dashboard() {
             {!isWorkingOut ? (
               <>
                 {/* Daily Target */}
-                <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
+<div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
                   <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Trophy size={16} className="text-sky-300" /></div>
-                      <div><h2 className="text-white font-bold text-sm leading-tight">Daily Target</h2><p className="text-gray-400 text-[10px]">Today's Progress</p></div>
+                      <div><h2 className={`${isDark ? 'text-white' : 'text-gray-900'} font-bold text-sm leading-tight`}>Daily Target</h2><p className="text-gray-400 text-[10px]">Today's Progress</p></div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1 bg-sky-300/70/10 rounded-lg px-2 py-1"><FlameKindling size={12} className="text-orange-400" /><span className="text-orange-300 text-[10px] font-bold">{streak.current}d</span></div>
@@ -1211,19 +1236,19 @@ export default function Dashboard() {
                   <div className="px-5 pb-4 flex items-center justify-around">
                     <div className="flex flex-col items-center">
                       <div className="relative"><ProgressRing progress={(dailyProgress.calories / dailyTargets.calories) * 100} size={68} strokeWidth={5} color="#4FD1FF" bgColor="rgba(79,209,255,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><Flame size={16} className="text-sky-300" /></div></div>
-                      <div className="mt-1.5 text-center"><div className="text-white font-extrabold text-base leading-tight">{dailyProgress.calories}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.calories} kcal</div></div>
+                      <div className="mt-1.5 text-center"><div className={`font-extrabold text-base leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{dailyProgress.calories}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.calories} kcal</div></div>
                     </div>
                     <div className="flex flex-col items-center">
                       <div className="relative"><ProgressRing progress={(Math.floor(dailyProgress.workoutSeconds / 60) / dailyTargets.workoutMin) * 100} size={68} strokeWidth={5} color="#22c55e" bgColor="rgba(34,197,94,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><Timer size={16} className="text-green-400" /></div></div>
-                      <div className="mt-1.5 text-center"><div className="text-white font-extrabold text-base leading-tight">{Math.floor(dailyProgress.workoutSeconds / 60)}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.workoutMin} min</div></div>
+                      <div className="mt-1.5 text-center"><div className={`font-extrabold text-base leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{Math.floor(dailyProgress.workoutSeconds / 60)}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.workoutMin} min</div></div>
                     </div>
                     <div className="flex flex-col items-center">
                       <div className="relative"><ProgressRing progress={(dailyProgress.reps / dailyTargets.reps) * 100} size={68} strokeWidth={5} color="#4FD1FF" bgColor="rgba(79,209,255,0.15)" /><div className="absolute inset-0 flex items-center justify-center"><RotateCcw size={16} className="text-blue-400" /></div></div>
-                      <div className="mt-1.5 text-center"><div className="text-white font-extrabold text-base leading-tight">{dailyProgress.reps}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.reps} reps</div></div>
+                      <div className="mt-1.5 text-center"><div className={`font-extrabold text-base leading-tight ${isDark ? 'text-white' : 'text-gray-900'}`}>{dailyProgress.reps}</div><div className="text-gray-500 text-[9px]">/ {dailyTargets.reps} reps</div></div>
                     </div>
                   </div>
                   <div className="mx-5 mb-4">
-                    <div className="flex items-center gap-1.5 mb-2"><BarChart3 size={12} className="text-gray-500" /><span className="text-gray-400 text-[10px] font-semibold">This Week</span></div>
+                    <div className="flex items-center gap-1.5 mb-2"><BarChart3 size={12} className="text-gray-500" /><span className={`text-gray-400 text-[10px] font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>This Week</span></div>
                     <div className="flex items-end gap-1.5 h-12">
                       {weeklyData.map((d, i) => {
                         const maxCal = Math.max(...weeklyData.map(w => w.calories), dailyTargets.calories);
@@ -1258,7 +1283,13 @@ export default function Dashboard() {
                 <div className="flex gap-2 flex-wrap">
                   {categories.map((cat) => (
                     <button key={cat} onClick={() => setSelectedCategory(cat)}
-                      className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${selectedCategory === cat ? 'bg-sky-400/15 text-sky-200 border border-sky-300/30 shadow-[0_0_12px_rgba(79,209,255,0.25)]shadow-md' : 'bg-white/10 text-gray-300 hover:bg-white/15 border border-white/10'}`}>
+className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+  selectedCategory === cat 
+    ? 'bg-sky-500 text-white border border-sky-400 shadow-md' 
+    : isDark 
+      ? 'bg-white/10 text-gray-300 hover:bg-white/15 border border-white/10' 
+      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
+}`}>
                       {React.createElement(categoryIcons[cat] || HomeIcon, { size: 14 })} {cat}
                     </button>
                   ))}
@@ -1268,34 +1299,54 @@ export default function Dashboard() {
                 <div className="flex gap-2 flex-wrap">
                   {['All', 'Easy', 'Medium', 'Hard'].map((d) => (
                     <button key={d} onClick={() => setDifficultyFilter(d)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold cursor-pointer transition-all ${difficultyFilter === d ? 'bg-sky-300/70/80 text-white' : 'bg-white/10 text-gray-400 hover:bg-white/15 border border-white/10'}`}>
+                      className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold cursor-pointer transition-all ${difficultyFilter === d ? 'bg-sky-500 text-white' : isDark ? 'bg-white/10 text-gray-400 hover:bg-white/15 border border-white/10' : 'bg-black/5 text-gray-600 hover:bg-black/10 border border-black/10'}`}>
                       {d}
                     </button>
                   ))}
                 </div>
 
                 {!isPremium && (
-                  <div className="rounded-xl py-2.5 px-3 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
+                  <div className="rounded-xl py-2.5 px-3 flex items-center gap-2" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
                     <Crown size={18} className="text-yellow-400 shrink-0" />
-                    <p className="text-white text-xs font-semibold flex-1 min-w-0">Unlock 150+ Exercises & AI Coaching</p>
-                    <button onClick={() => setShowPaymentModal(true)} className="px-3 py-1.5 rounded-lg text-white font-bold text-[10px] cursor-pointer transition-all whitespace-nowrap flex items-center gap-1 shrink-0" style={{ backgroundColor: '#2f86a5' }}><Sparkles size={10} /> Pro</button>
+                    <p className={`text-xs font-semibold flex-1 min-w-0 ${isDark ? 'text-white' : 'text-gray-900'}`}>Unlock 150+ Exercises & AI Coaching</p>
+                    <button onClick={() => setShowPaymentModal(true)} className="px-3 py-1.5 rounded-lg text-white font-bold text-[10px] cursor-pointer transition-all whitespace-nowrap flex items-center gap-1 shrink-0" style={{ background: 'linear-gradient(135deg, #3b82f6, #4d4fbb)' }}><Sparkles size={10} /> Pro</button>
                   </div>
                 )}
 
                 {/* Exercise grid */}
                 <div className="grid grid-cols-2 gap-3">
                   {filteredExercises.map((ex) => (
-                    <button key={ex.id} onClick={() => handleExerciseClick(ex)}
-                      className={`relative z-10 p-3 rounded-xl text-left cursor-pointer transition-all active:scale-[0.97] ${ex.premium && !isPremium ? 'opacity-80' : ''} bg-white/5 border border-white/10 hover:border-[#4FD1FF]/50 hover:bg-white/10`}>
-                      {ex.premium && !isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Lock size={10} className="text-gray-400" /><span className="text-[10px] font-bold text-sky-300 bg-sky-300/70/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
-                      {ex.premium && isPremium && <div className="absolute top-2 right-2 flex items-center gap-0.5"><Crown size={10} className="text-yellow-400" /><span className="text-[10px] font-bold text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded-full">PRO</span></div>}
-                      <div className="mb-0.5 text-sky-300">{getCategoryIcon(ex.category, 18)}</div>
-                      <div className="font-semibold text-xs text-white leading-tight pr-7">{ex.name}</div>
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${getDifficultyColor(ex.difficulty)}`}>{ex.difficulty.charAt(0).toUpperCase() + ex.difficulty.slice(1)}</span>
-                        <span className="text-[9px] text-gray-500">~{Math.round(getCalPerRep(ex) * 10)}k/10r</span>
-                      </div>
-                    </button>
+                   <button key={ex.id} onClick={() => handleExerciseClick(ex)}
+className={`relative z-10 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 active:scale-[0.97] ${ex.premium && !isPremium ? 'opacity-70' : ''}`}
+style={{ background: isDark ? '#111827' : '#ffffff', border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)' }}>
+  
+  {/* PRO badge */}
+  {ex.premium && !isPremium && (
+    <div className="absolute top-3 right-3 flex items-center gap-0.5">
+      <Lock size={9} className="text-gray-400" />
+      <span className="text-[9px] font-bold text-gray-400 bg-white/10 px-1.5 py-0.5 rounded-full">PRO</span>
+    </div>
+  )}
+  {ex.premium && isPremium && (
+    <div className="absolute top-3 right-3">
+      <Crown size={12} className="text-yellow-400" />
+    </div>
+  )}
+
+  {/* Icon */}
+  <div className={`w-8 h-8 rounded-xl flex items-center justify-center mb-3 ${isDark ? 'bg-white/10 border border-white/20 text-white' : 'bg-gray-100 border border-gray-200 text-gray-700'}`}>
+    {getCategoryIcon(ex.category, 16)}
+  </div>
+
+  {/* Name */}
+  <div className={`font-bold text-sm leading-tight pr-6 mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{ex.name}</div>
+
+  {/* Difficulty only — clean */}
+  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getDifficultyColor(ex.difficulty)}`}>
+    {ex.difficulty.charAt(0).toUpperCase() + ex.difficulty.slice(1)}
+  </span>
+
+</button>
                   ))}
                 </div>
               </>
@@ -1445,7 +1496,7 @@ export default function Dashboard() {
         {/* ==================== DIET TAB ==================== */}
         {activeTab === 'diet' && (
           <div className="space-y-4 px-3 pt-3 pb-8">
-            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
+            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
               <div className="px-5 pt-5 pb-2 flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Utensils size={16} className="text-sky-300" /></div>
                 <h2 className="text-sm font-bold text-white">Diet Plan Generator</h2>
@@ -1459,7 +1510,7 @@ export default function Dashboard() {
                 </div>
               )}
               <div className="px-5 pb-5">
-                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: '#217999' }}>
+                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #5d759c, #3e4097)' }}>
                   {dietLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating Plan...</> : <><Utensils size={16} /> Get Diet Plan</>}
                 </button>
               </div>
@@ -1471,7 +1522,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
+            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
               <div className="flex items-center gap-2 mb-3 px-5 pt-5">
                 <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Microscope size={16} className="text-sky-300" /></div>
                 <h2 className="text-sm font-bold text-white">Analyze Your Diet</h2>
@@ -1482,7 +1533,7 @@ export default function Dashboard() {
                   className="w-full p-3 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-gray-500 outline-none resize-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" rows={3} />
               </div>
               <div className="px-5 pb-5">
-                <button onClick={analyzeDiet} disabled={analyzeLoading || !mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ backgroundColor: '#217999' }}>
+                <button onClick={analyzeDiet} disabled={analyzeLoading || !mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #556d94, #464896)' }}>
                   {analyzeLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Microscope size={16} /> Analyze Diet</>}
                 </button>
               </div>
@@ -1514,9 +1565,24 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+<ProfileModal
+  isOpen={showProfile}
+  onClose={() => setShowProfile(false)}
+  firebaseUser={user}
+  isPremium={isPremium}
+  dailyProgress={dailyProgress}
+  streak={streak}
+  dailyTargets={dailyTargets}
+  isDark={isDark}
+  onToggleTheme={() => setIsDark(d => !d)}
+/>
 
-      <PaymentModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)}
-        onUpgrade={() => { setIsPremium(true); showToast('Welcome to FitCoach Pro! All exercises unlocked.'); }} />
+<PaymentModal
+  isOpen={showPaymentModal}
+  onClose={() => setShowPaymentModal(false)}
+  onUpgrade={() => { setIsPremium(true); showToast('Welcome to FitCoach Pro! All exercises unlocked.'); }}
+/>
+
 
       {toast && (
         <div className="fixed left-1/2 -translate-x-1/2 z-50 animate-bounce" style={{ bottom: '2rem' }}>

@@ -244,6 +244,7 @@ const handleForgotPassword = async (e) => {
               <BackBtn />
               {!resetSent ? (
                 <>
+                
                   <div className="flex justify-center mb-5">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center"
                       style={{ background: 'rgba(79,209,255,0.07)', border: '1px solid rgba(79,209,255,0.1)' }}>
@@ -423,6 +424,11 @@ const handleForgotPassword = async (e) => {
               </svg>
               <span className="text-white/60 text-xs font-medium">Continue with Google</span>
             </button>
+            <div className="text-center mt-4">
+              <a href="/privacy" className="text-gray-600 text-[10px] hover:text-sky-400 transition-colors">
+                Privacy Policy
+              </a>
+            </div>
 
           </div>
         </div>

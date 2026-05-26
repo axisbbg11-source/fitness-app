@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
 import PrivacyPopup from "./PrivacyPopup";
 import ProtectedRoute from './ProtectedRoute';
+import PrivacyPolicy from './PrivacyPolicy';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import InstallPrompt from './InstallPrompt';
@@ -25,6 +26,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
 
           <Route
             path="/"
