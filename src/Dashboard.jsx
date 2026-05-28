@@ -1494,76 +1494,108 @@ style={{ background: isDark ? '#111827' : '#ffffff', border: isDark ? '1px solid
         )}
 
         {/* ==================== DIET TAB ==================== */}
-        {activeTab === 'diet' && (
-          <div className="space-y-4 px-3 pt-3 pb-8">
-            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
-              <div className="px-5 pt-5 pb-2 flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Utensils size={16} className="text-sky-300" /></div>
-                <h2 className="text-sm font-bold text-white">Diet Plan Generator</h2>
-              </div>
-              <p className="text-xs text-gray-400 mb-3 px-5">Get a personalized diet plan based on your workout session.</p>
-              {currentExercise && (
-                <div className="flex items-center gap-2 mb-4 mx-5 bg-white/5 rounded-xl p-3">
-                  <span className="text-sky-300">{getCategoryIcon(currentExercise.category, 16)}</span>
-                  <span className="text-sm font-medium text-gray-300">{currentExercise.name}</span>
-                  <span className="text-xs text-gray-500">- {repCount} reps - {caloriesBurned} kcal burned</span>
-                </div>
-              )}
-              <div className="px-5 pb-5">
-                <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #5d759c, #3e4097)' }}>
-                  {dietLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating Plan...</> : <><Utensils size={16} /> Get Diet Plan</>}
-                </button>
-              </div>
-              {dietPlan && (
-                <div className="mx-5 mb-5 bg-white/5 rounded-xl p-4">
-                  <h3 className="text-sm font-bold text-white mb-2">Your Diet Plan</h3>
-                  <div className="text-sm text-gray-300 whitespace-pre-line leading-relaxed">{dietPlan}</div>
-                </div>
-              )}
-            </div>
+      {activeTab === 'diet' && (
+  <div className="space-y-4 px-3 pt-3 pb-8">
+    <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
+      <div className="px-5 pt-5 pb-2 flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Utensils size={16} className="text-sky-300" /></div>
+        <h2 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Diet Plan Generator</h2>
+      </div>
+      <p className={`text-xs mb-3 px-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Get a personalized diet plan based on your workout session.</p>
+      {currentExercise && (
+        <div className={`flex items-center gap-2 mb-4 mx-5 rounded-xl p-3 ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+          <span className="text-sky-300">{getCategoryIcon(currentExercise.category, 16)}</span>
+          <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{currentExercise.name}</span>
+          <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>- {repCount} reps - {caloriesBurned} kcal burned</span>
+        </div>
+      )}
+      <div className="px-5 pb-5">
+        <button onClick={getDietPlan} disabled={dietLoading} className="w-full py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #5d759c, #3e4097)' }}>
+          {dietLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Generating Plan...</> : <><Utensils size={16} /> Get Diet Plan</>}
+        </button>
+      </div>
+      {dietPlan && (
+        <div className={`mx-5 mb-5 rounded-xl p-4 ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+          <h3 className={`text-sm font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Your Diet Plan</h3>
+          <div className={`text-sm whitespace-pre-line leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{dietPlan}</div>
+        </div>
+      )}
+    </div>
 
-            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
-              <div className="flex items-center gap-2 mb-3 px-5 pt-5">
-                <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Microscope size={16} className="text-sky-300" /></div>
-                <h2 className="text-sm font-bold text-white">Analyze Your Diet</h2>
-              </div>
-              <p className="text-xs text-gray-400 mb-3 px-5">Enter your meals to get a detailed nutritional breakdown.</p>
-              <div className="px-5">
-                <textarea value={mealInput} onChange={(e) => setMealInput(e.target.value)} placeholder="e.g., 2 roti, dal, rice, curd, 1 banana..."
-                  className="w-full p-3 rounded-xl bg-white/10 border border-white/10 text-xs text-white placeholder-gray-500 outline-none resize-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" rows={3} />
-              </div>
-              <div className="px-5 pb-5">
-                <button onClick={analyzeDiet} disabled={analyzeLoading || !mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #556d94, #464896)' }}>
-                  {analyzeLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Microscope size={16} /> Analyze Diet</>}
-                </button>
-              </div>
-              {dietAnalysis && (
-                <div className="mt-4 space-y-4 px-5 pb-5">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-orange-400/10 rounded-lg p-2.5 text-center"><div className="text-[10px] text-orange-400 mb-0.5">Calories</div><div className="text-base font-extrabold text-orange-300">{dietAnalysis.calories}</div><div className="text-[9px] text-orange-400/70">kcal</div></div>
-                    <div className="bg-green-400/10 rounded-lg p-2.5 text-center"><div className="text-[10px] text-green-400 mb-0.5">Protein</div><div className="text-base font-extrabold text-green-300">{dietAnalysis.protein}g</div></div>
-                    <div className="bg-blue-400/10 rounded-lg p-2.5 text-center"><div className="text-[10px] text-blue-400 mb-0.5">Carbs</div><div className="text-base font-extrabold text-blue-300">{dietAnalysis.carbs}g</div></div>
-                    <div className="bg-yellow-400/10 rounded-lg p-2.5 text-center"><div className="text-[10px] text-yellow-400 mb-0.5">Fat</div><div className="text-base font-extrabold text-yellow-300">{dietAnalysis.fat}g</div></div>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-xs mb-1"><span className="font-semibold text-gray-300">Protein Goal</span><span className="text-gray-500">{dietAnalysis.protein}g / {dietAnalysis.goalProtein}g</span></div>
-                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (dietAnalysis.protein / dietAnalysis.goalProtein) * 100)}%`, backgroundColor: dietAnalysis.protein >= dietAnalysis.goalProtein ? '#22c55e' : '#4FD1FF' }} /></div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs mb-1"><span className="font-semibold text-gray-300">Calorie Goal</span><span className="text-gray-500">{dietAnalysis.calories} / {dietAnalysis.goalCalories} kcal</span></div>
-                      <div className="h-2.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (dietAnalysis.calories / dietAnalysis.goalCalories) * 100)}%`, backgroundColor: dietAnalysis.calories >= dietAnalysis.goalCalories ? '#22c55e' : '#4FD1FF' }} /></div>
-                    </div>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-3 space-y-1.5">
-                    <p className="text-xs text-gray-300 flex items-start gap-1"><Sparkles size={12} className="text-sky-300 mt-0.5 shrink-0" />{dietAnalysis.suggestionEn}</p>
-                    <p className="text-xs text-gray-500 flex items-start gap-1"><ChevronRight size={12} className="text-gray-400 mt-0.5 shrink-0" />{dietAnalysis.suggestionHi}</p>
-                  </div>
-                </div>
-              )}
+    <div className="rounded-2xl overflow-hidden shadow-lg" style={{ background: isDark ? 'linear-gradient(135deg, #1e2d4a 0%, #1a3050 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)' }}>
+      <div className="flex items-center gap-2 mb-3 px-5 pt-5">
+        <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Microscope size={16} className="text-sky-300" /></div>
+        <h2 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Analyze Your Diet</h2>
+      </div>
+      <p className={`text-xs mb-3 px-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Enter your meals to get a detailed nutritional breakdown.</p>
+      <div className="px-5">
+        <textarea
+          value={mealInput}
+          onChange={(e) => setMealInput(e.target.value)}
+          placeholder="e.g., 2 roti, dal, rice, curd, 1 banana..."
+          className={`w-full p-3 rounded-xl text-xs outline-none resize-none border transition-colors focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-gray-500' : 'bg-black/5 border-black/10 text-gray-900 placeholder-gray-400'}`}
+          rows={3}
+        />
+      </div>
+      <div className="px-5 pb-5">
+        <button onClick={analyzeDiet} disabled={analyzeLoading || !mealInput.trim()} className="w-full mt-3 py-3 rounded-xl text-white font-bold text-base cursor-pointer transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" style={{ background: 'linear-gradient(135deg, #556d94, #464896)' }}>
+          {analyzeLoading ? <><span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Microscope size={16} /> Analyze Diet</>}
+        </button>
+      </div>
+      {dietAnalysis && (
+        <div className="mt-4 space-y-4 px-5 pb-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-orange-400/10 rounded-lg p-2.5 text-center">
+              <div className="text-[10px] text-orange-400 mb-0.5">Calories</div>
+              <div className="text-base font-extrabold text-orange-300">{dietAnalysis.calories}</div>
+              <div className="text-[9px] text-orange-400/70">kcal</div>
+            </div>
+            <div className="bg-green-400/10 rounded-lg p-2.5 text-center">
+              <div className="text-[10px] text-green-400 mb-0.5">Protein</div>
+              <div className="text-base font-extrabold text-green-300">{dietAnalysis.protein}g</div>
+            </div>
+            <div className="bg-blue-400/10 rounded-lg p-2.5 text-center">
+              <div className="text-[10px] text-blue-400 mb-0.5">Carbs</div>
+              <div className="text-base font-extrabold text-blue-300">{dietAnalysis.carbs}g</div>
+            </div>
+            <div className="bg-yellow-400/10 rounded-lg p-2.5 text-center">
+              <div className="text-[10px] text-yellow-400 mb-0.5">Fat</div>
+              <div className="text-base font-extrabold text-yellow-300">{dietAnalysis.fat}g</div>
             </div>
           </div>
-        )}
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Protein Goal</span>
+                <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>{dietAnalysis.protein}g / {dietAnalysis.goalProtein}g</span>
+              </div>
+              <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (dietAnalysis.protein / dietAnalysis.goalProtein) * 100)}%`, backgroundColor: dietAnalysis.protein >= dietAnalysis.goalProtein ? '#22c55e' : '#4FD1FF' }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between text-xs mb-1">
+                <span className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Calorie Goal</span>
+                <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>{dietAnalysis.calories} / {dietAnalysis.goalCalories} kcal</span>
+              </div>
+              <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, (dietAnalysis.calories / dietAnalysis.goalCalories) * 100)}%`, backgroundColor: dietAnalysis.calories >= dietAnalysis.goalCalories ? '#22c55e' : '#4FD1FF' }} />
+              </div>
+            </div>
+          </div>
+          <div className={`rounded-lg p-3 space-y-1.5 ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+            <p className={`text-xs flex items-start gap-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+              <Sparkles size={12} className="text-sky-300 mt-0.5 shrink-0" />{dietAnalysis.suggestionEn}
+            </p>
+            <p className={`text-xs flex items-start gap-1 ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+              <ChevronRight size={12} className="text-gray-400 mt-0.5 shrink-0" />{dietAnalysis.suggestionHi}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
       </main>
 <ProfileModal
   isOpen={showProfile}

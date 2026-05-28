@@ -2,28 +2,26 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   onAuthStateChanged,
   signOut,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,   // ← switched from signInWithRedirect
 } from 'firebase/auth';
-
 import { auth, googleProvider } from './firebase';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
- const [user, setUser] = useState(() => {
-  try {
-    const cached = localStorage.getItem('fitcoach-user');
-    return cached ? JSON.parse(cached) : null;
-  } catch {
-    return null;
-  }
-});
-const [loading, setLoading] = useState(() => {
-  return !localStorage.getItem('fitcoach-user');
-});
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('fitcoach-user');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    return !localStorage.getItem('fitcoach-user');
+  });
 
-  // AUTH STATE LISTENER
+  // Single source of truth — onAuthStateChanged handles everything
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -33,64 +31,38 @@ const [loading, setLoading] = useState(() => {
           email: firebaseUser.email,
           photoURL: firebaseUser.photoURL,
         };
-
         setUser(userData);
-
-        localStorage.setItem(
-          'fitcoach-user',
-          JSON.stringify(userData)
-        );
+        localStorage.setItem('fitcoach-user', JSON.stringify(userData));
       } else {
         setUser(null);
         localStorage.removeItem('fitcoach-user');
       }
-
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
+  // ↑ getRedirectResult useEffect is completely removed — no longer needed
 
-  // HANDLE REDIRECT RESULT
-  useEffect(() => {
-    const fetchRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-
-        if (result?.user) {
-          const userData = {
-            uid: result.user.uid,
-            displayName: result.user.displayName,
-            email: result.user.email,
-            photoURL: result.user.photoURL,
-          };
-
-          setUser(userData);
-
-          localStorage.setItem(
-            'fitcoach-user',
-            JSON.stringify(userData)
-          );
-        }
-      } catch (error) {
-        console.error('Redirect login error:', error);
-      }
-    };
-
-    fetchRedirectResult();
-  }, []);
-
-  // GOOGLE LOGIN
+  // GOOGLE LOGIN — popup, instant, no race condition
   const loginWithGoogle = async () => {
     try {
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
+      // No need to manually setUser here — onAuthStateChanged fires automatically
     } catch (error) {
-      if (error.code === 'auth/unauthorized-domain') {
+      if (error.code === 'auth/popup-blocked') {
         throw new Error(
-          'This domain is not authorized. Add it in Firebase Console → Authentication → Settings → Authorized domains'
+          'Popup was blocked by your browser. Please allow popups for this site and try again.'
         );
       }
-
+      if (error.code === 'auth/unauthorized-domain') {
+        throw new Error(
+          'This domain is not authorized. Add it in Firebase Console → Authentication → Settings → Authorized domains.'
+        );
+      }
+      if (error.code === 'auth/popup-closed-by-user') {
+        // User dismissed the popup — not an error, just return silently
+        return;
+      }
       throw new Error(error.message);
     }
   };
@@ -99,7 +71,6 @@ const [loading, setLoading] = useState(() => {
   const logout = async () => {
     try {
       await signOut(auth);
-
       localStorage.removeItem('fitcoach-user');
       localStorage.removeItem('fitcoach-logged-in');
     } catch (error) {
@@ -108,14 +79,7 @@ const [loading, setLoading] = useState(() => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        loginWithGoogle,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -123,14 +87,10 @@ const [loading, setLoading] = useState(() => {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-
   if (!context) {
-    throw new Error(
-      'useAuth must be used within an AuthProvider'
-    );
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-
   return context;
 }
 
-export default AuthContext; 
+export default AuthContext;
