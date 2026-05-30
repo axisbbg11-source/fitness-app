@@ -1,0 +1,71 @@
+c = "bibek"
+c +="borgphain"  #concatination means joining two str together
+print(c)
+
+print("beau person".replace("beau","bibek"))
+print("mother father".replace("mother","bibek"))
+print("hi hello".join("bibibi"))
+print("hi hello".find("hi hello")) 
+print("hi"in c)
+name = "bibek\"bibkk"#excaping 
+print(name)
+name = 'bibek \n bibek'  #new line
+print(name)
+print(name[0]) # to print the index
+print (name[-1]) #it will return to a perticular range of indexing
+#in python indexing is same as in c++ start from 0
+#boolean have two values  true and falseter
+gug = 9837938793874  # str are only false when empty (0)
+if gug:
+    print("yes")
+else:
+    print("no")
+print(f"hello {name}")         
+num = complex(2,3)#complex 
+print(num.real)
+#buils in function 
+abs(5.5) # absolute values
+round(5.64) # round off if we round(5.49,1) then it take the to nearset ten digit place
+from enum import Enum
+ 
+class state(Enum): #list them  the only way in python for declaring a condtant
+     inactive =0 
+     active = 1
+print(list(state))
+ 
+#next list 
+dogs = ["bibek", "anu"]
+print("bibek" in dogs)  #to find
+print(dogs[0]) #indexing here 0 is the first word
+print(dogs)
+print(dogs[1:2])
+dogs.append("bibi") #we can add new things to the list
+dogs.extend(["sus",51]) #we can add new things to the list
+dogs +=["nunu"] #we can add new things to the list
+print(dogs)
+#we can also remove from the list
+dogs.remove("bibek")
+print(dogs)
+
+
+#we can also pop and push
+print(dogs.pop()) #delet the last element
+print(dogs)
+
+
+
+#entering in specific indexing
+dogs[2]=["ib"]
+print(dogs)
+
+dogs.remove(51)
+#sorting #while sorting the element much be of same
+dogs.remove(['ib'])
+dogs.sort(key=str.lower) # there are three type of sorting 1)lower case 
+#2)uppercase and upper than loewr
+print(dogs)
+
+#copy the list
+doges = dogs[:] 
+print(doges)
+#tuples

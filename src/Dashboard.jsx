@@ -1225,7 +1225,10 @@ useEffect(() => {
                   <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg bg-sky-300/70/20 flex items-center justify-center"><Trophy size={16} className="text-sky-300" /></div>
-                      <div><h2 className={`${isDark ? 'text-white' : 'text-gray-900'} font-bold text-sm leading-tight`}>Daily Target</h2><p className="text-gray-400 text-[10px]">Today's Progress</p></div>
+                      <div>
+                        <h2 className="font-bold text-sm leading-tight" style={{ color: isDark ? '#ffffff' : '#1f2937' }}>Daily Target</h2>
+                        <p className="text-[10px]" style={{ color: isDark ? '#cbd5e1' : '#6b7280' }}>Today's Progress</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1 bg-sky-300/70/10 rounded-lg px-2 py-1"><FlameKindling size={12} className="text-orange-400" /><span className="text-orange-300 text-[10px] font-bold">{streak.current}d</span></div>
@@ -1264,15 +1267,27 @@ useEffect(() => {
                     </div>
                   </div>
                   {editingTargets && (
-                    <div className="mx-5 mb-4 bg-white/5 rounded-xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 mb-2"><CalendarDays size={14} className="text-sky-300" /><span className="text-white text-sm font-bold">Set Your Targets</span></div>
+                    <div className={`mx-5 mb-4 rounded-xl p-4 space-y-3 ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
+                      <div className="flex items-center gap-2 mb-2"><CalendarDays size={14} className="text-sky-300" /><span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Set Your Targets</span></div>
                       <div className="grid grid-cols-3 gap-3">
-                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Calories</label><input type="number" value={editCalTarget} onChange={(e) => setEditCalTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /><span className="text-gray-500 text-[9px]">kcal</span></div>
-                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Workout</label><input type="number" value={editMinTarget} onChange={(e) => setEditMinTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /><span className="text-gray-500 text-[9px]">minutes</span></div>
-                        <div><label className="text-gray-400 text-[10px] font-semibold mb-1 block">Reps</label><input type="number" value={editRepTarget} onChange={(e) => setEditRepTarget(e.target.value)} className="w-full px-2 py-1.5 rounded-lg bg-white/10 text-white text-sm text-center outline-none border border-white/10 focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors" /><span className="text-gray-500 text-[9px]">reps</span></div>
+                        <div>
+                          <label className={`text-[10px] font-semibold mb-1 block ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Calories</label>
+                          <input type="number" value={editCalTarget} onChange={(e) => setEditCalTarget(e.target.value)} className={`w-full px-2 py-1.5 rounded-lg ${isDark ? 'bg-white/10 text-white border border-white/10' : 'bg-black/5 text-gray-900 border border-black/10'} text-sm text-center outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors`} />
+                          <span className="text-gray-500 text-[9px]">kcal</span>
+                        </div>
+                        <div>
+                          <label className={`text-[10px] font-semibold mb-1 block ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Workout</label>
+                          <input type="number" value={editMinTarget} onChange={(e) => setEditMinTarget(e.target.value)} className={`w-full px-2 py-1.5 rounded-lg ${isDark ? 'bg-white/10 text-white border border-white/10' : 'bg-black/5 text-gray-900 border border-black/10'} text-sm text-center outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors`} />
+                          <span className="text-gray-500 text-[9px]">minutes</span>
+                        </div>
+                        <div>
+                          <label className={`text-[10px] font-semibold mb-1 block ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>Reps</label>
+                          <input type="number" value={editRepTarget} onChange={(e) => setEditRepTarget(e.target.value)} className={`w-full px-2 py-1.5 rounded-lg ${isDark ? 'bg-white/10 text-white border border-white/10' : 'bg-black/5 text-gray-900 border border-black/10'} text-sm text-center outline-none focus:border-sky-300 focus:ring-2 focus:ring-sky-300/10 transition-colors`} />
+                          <span className="text-gray-500 text-[9px]">reps</span>
+                        </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => setEditingTargets(false)} className="flex-1 py-2 rounded-lg bg-white/10 text-gray-400 text-xs font-semibold cursor-pointer hover:bg-white/15 transition-colors">Cancel</button>
+                        <button onClick={() => setEditingTargets(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold cursor-pointer ${isDark ? 'bg-white/10 text-gray-400 hover:bg-white/15' : 'bg-black/5 text-gray-600 hover:bg-black/10'} transition-colors`}>Cancel</button>
                         <button onClick={saveTargetEdits} className="flex-1 py-2 rounded-lg text-white text-xs font-bold cursor-pointer transition-all" style={{ backgroundColor: '#4FD1FF' }}>Save Targets</button>
                       </div>
                     </div>
